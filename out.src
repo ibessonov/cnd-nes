@@ -1,0 +1,98 @@
+    .inesprg 8 ; Number of 16k PRG blocks.
+    .ineschr 16 ; Number of 8k CHR blocks.
+    .inesmir 0 ; Background mirroring
+    .inesmap 1 ; Mapper
+
+ENTRY_POINT = $FFFA
+
+PPU_CTRL_REG            = $2000
+PPU_MASK_REG            = $2001
+PPU_STATUS_REG          = $2002
+
+OAM_ADDR_REG            = $2003
+OAM_DMA_REG             = $4014
+
+PPU_SCROLL_REG          = $2005
+PPU_ADDR_REG            = $2006
+PPU_DATA_REG            = $2007
+
+APU_REG_BASE
+APU_DMC_REG             = $4010
+APU_CH_CTRL_REG         = $4015
+APU_FRAME_CTR_REG       = $4017
+
+JOYPAD1_REG             = $4016
+JOYPAD2_REG             = $4017
+
+PALETTES_VRAM_ADDR      = $3F00
+
+OAM                     = $0200         ; Object Attribute Memory.
+
+Palettes                = $0300
+BackPalette             = $0300
+SpritePalette           = $0310
+PalettesBk              = $0320
+BackPaletteBk           = $0320
+SpritePaletteBk         = $0330
+
+VRamBufferBase          = $0360
+
+
+BUTTON_A                = %10000000
+BUTTON_B                = %01000000
+BUTTON_SELECT           = %00100000
+BUTTON_START            = %00010000
+BUTTON_UP               = %00001000
+BUTTON_DOWN             = %00000100
+BUTTON_LEFT             = %00000010
+BUTTON_RIGHT            = %00000001
+
+
+Joypad                  = $14
+Joypad1Tmp              = $14
+Joypad2Tmp              = $15
+Joypad1Tapped           = $14           ; Byte
+Joypad2Tapped           = $15           ; Byte
+Joypad1Pressed          = $16           ; Byte
+Joypad2Pressed          = $17           ; Byte
+
+PalettesOutdated        = $18           ; Boolean: 0 / x
+
+NextChrBank0            = $1A
+NextChrBank1            = $1B
+
+PalettesAnimType        = $3D
+PalettesAnimCounter     = $3E
+PalettesAnimFrame       = $3F
+
+TwoPlayersMode          = $50           ; Boolean: 0 / 1
+
+OamUsedSize             = $97
+
+; $DB has index 0 <= X < 8. Or $DA, it's not clear.
+; Next 8 bytes at $DC are interpreted in some specific way and have something to do with constant #$88.
+
+DisplayDisabled         = $F0           ; Boolean: 0 / 1 ?
+CurPrgBank              = $F1
+
+ChrBank0                = $F2
+ChrBank1                = $F3
+
+Continues               = $F8
+
+ScrollY                 = $FA           ; Up-down.
+ScrollX                 = $FC           ; Left-right.
+
+PpuMaskVal              = $FE
+PpuCtrlVal              = $FF
+
+    .include "bank0.src"
+    .include "bank1.src"
+    .include "bank2.src"
+    .include "bank3.src"
+    .include "bank4.src"
+    .include "bank5.src"
+    .include "bank6.src"
+    .include "bank7.src"
+
+    .incbin "chr.bin"
