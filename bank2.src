@@ -3,32 +3,32 @@
 
 ; X - param.
 L2_8000:
-    LDA L2_803D, X ; #8000
-    STA <$00 ; #8003
-    LDA L2_8047, X ; #8005
-    STA <$01 ; #8008
-    LDY #$00 ; #800A
-L2_800C:
+    LDA L2BackgroundsLSB, X
+    STA <$00
+    LDA L2BackgroundsMSB, X
+    STA <$01
+    LDY #$00
+L2BackgroundCopyLoop:
     LDA PPU_STATUS_REG
-    LDA [$00], Y ; #800F
-    BEQ L2_8036 ; #8011
-    STA PPU_ADDR_REG ; #8013
+    LDA [$00], Y
+    BEQ L2BackgroundCopyCompleted
+    STA PPU_ADDR_REG
     JSR IncBufferOffset
-    LDA [$00], Y ; #8019
-    STA PPU_ADDR_REG ; #801B
+    LDA [$00], Y
+    STA PPU_ADDR_REG
     JSR IncBufferOffset
-    LDA [$00], Y ; #8021
-    STA <$02 ; #8023
+    LDA [$00], Y
+    STA <$02
     JSR IncBufferOffset
-L2_8028:
-    LDA [$00], Y ; #8028
-    STA PPU_DATA_REG ; #802A
+L2BackgroundCopyInnerLoop:
+    LDA [$00], Y
+    STA PPU_DATA_REG
     JSR IncBufferOffset
-    DEC <$02 ; #8030
-    BPL L2_8028 ; #8032
-    BMI L2_800C ; #8034
-L2_8036:
-    RTS ; #8036
+    DEC <$02
+    BPL L2BackgroundCopyInnerLoop
+    BMI L2BackgroundCopyLoop
+L2BackgroundCopyCompleted:
+    RTS
 
 IncBufferOffset:
     INY
@@ -37,31 +37,31 @@ IncBufferOffset:
 SkipBufferMsbInc:
     RTS
 
-L2_803D:
-    .db LOW(L2_8051)
-    .db LOW(L2_8142)
-    .db LOW(L2_8227)
-    .db LOW(L2_83B2)
-    .db LOW(L2_83B2)
-    .db LOW(L2_8486)
-    .db LOW(L2_855A)
-    .db LOW(L2_862E)
-    .db LOW(L2_8702)
-    .db LOW(L2_877C)
-L2_8047:
-    .db HIGH(L2_8051)
-    .db HIGH(L2_8142)
-    .db HIGH(L2_8227)
-    .db HIGH(L2_83B2)
-    .db HIGH(L2_83B2)
-    .db HIGH(L2_8486)
-    .db HIGH(L2_855A)
-    .db HIGH(L2_862E)
-    .db HIGH(L2_8702)
-    .db HIGH(L2_877C)
+L2BackgroundsLSB:
+    .db LOW(ZoneDBossBackground)
+    .db LOW(ZoneJBossBackground1)
+    .db LOW(TitleScreenBackground)
+    .db LOW(Dialogue1Background)
+    .db LOW(Dialogue1Background)
+    .db LOW(Dialogue2Background)
+    .db LOW(Dialogue4Background)
+    .db LOW(Dialogue3Background)
+    .db LOW(DialogueFrameBackground)
+    .db LOW(DialogueFrameBottomBackground)
+L2BackgroundsMSB:
+    .db HIGH(ZoneDBossBackground)
+    .db HIGH(ZoneJBossBackground1)
+    .db HIGH(TitleScreenBackground)
+    .db HIGH(Dialogue1Background)
+    .db HIGH(Dialogue1Background)
+    .db HIGH(Dialogue2Background)
+    .db HIGH(Dialogue4Background)
+    .db HIGH(Dialogue3Background)
+    .db HIGH(DialogueFrameBackground)
+    .db HIGH(DialogueFrameBottomBackground)
 
 ; Giant robot boss.
-L2_8051:
+ZoneDBossBackground:
     .db $25, $00, $0B,          $00, $00, $00, $00, $00, $01, $02, $03, $04, $05, $06, $00
     .db $25, $20, $0B,          $00, $00, $00, $00, $10, $11, $12, $13, $14, $15, $16, $00
     .db $25, $40, $0B,          $00, $00, $00, $00, $20, $21, $22, $23, $24, $25, $26, $00
@@ -81,7 +81,7 @@ L2_8051:
     .db $00
 
 ; Fat cat boss without his table.
-L2_8142:
+ZoneJBossBackground1:
     .db $24, $88, $0F,          $00, $00, $00, $00, $00, $00, $01, $00, $00, $02, $03, $00, $00, $00, $00, $00
     .db $24, $A8, $0F,          $00, $00, $00, $11, $12, $13, $00, $00, $00, $00, $10, $50, $00, $00, $00, $00
     .db $24, $C8, $0F,          $00, $00, $20, $21, $22, $23, $00, $00, $00, $00, $08, $09, $00, $00, $00, $00
@@ -97,7 +97,7 @@ L2_8142:
     .db $00
 
 ; Title screen.
-L2_8227:
+TitleScreenBackground:
     .db $20, $88, $0F,          $00, $00, $00, $E1, $E2, $20, $21, $22, $23, $24, $25, $26, $00, $00, $00, $00
     .db $20, $A8, $0F,          $00, $DF, $E0, $27, $28, $29, $2A, $2B, $2C, $2D, $2E, $2F, $30, $00, $00, $00
     .db $20, $C8, $0F,          $DC, $DD, $DE, $31, $32, $33, $34, $35, $36, $37, $38, $39, $3A, $3B, $00, $00
@@ -133,7 +133,7 @@ L2_8227:
     .db $00
 
 ; Starting group shot.
-L2_83B2:
+Dialogue1Background:
     .db $20, $88, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $A8, $0F,          $00, $00, $00, $00, $01, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $C8, $0F,          $00, $00, $00, $02, $03, $04, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
@@ -151,7 +151,7 @@ L2_83B2:
     .db $00
 
 ; Fat cat dialog pic.
-L2_8486:
+Dialogue2Background:
     .db $20, $88, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $A8, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $C8, $0F,          $00, $00, $00, $00, $00, $00, $46, $47, $48, $00, $00, $00, $00, $00, $00, $00
@@ -169,7 +169,7 @@ L2_8486:
     .db $00 ; #8559
 
 ; Final screen.
-L2_855A:
+Dialogue4Background:
     .db $20, $88, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $01, $00, $00, $00, $00, $00, $00
     .db $20, $A8, $0F,          $00, $00, $00, $00, $00, $02, $03, $00, $00, $04, $00, $00, $00, $00, $00, $00
     .db $20, $C8, $0F,          $00, $00, $00, $00, $05, $06, $07, $08, $09, $0A, $00, $00, $00, $00, $00, $00
@@ -187,7 +187,7 @@ L2_855A:
     .db $00
 
 ; Gadget is calling us.
-L2_862E:
+Dialogue3Background:
     .db $20, $88, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $A8, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     .db $20, $C8, $0F,          $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
@@ -205,7 +205,7 @@ L2_862E:
     .db $00
 
 ; Top outlining.
-L2_8702:
+DialogueFrameBackground:
     .db $20, $67, $11,          $FA, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FB, $FA
     .db $20, $87, $00,          $FC,           $20, $98, $00,                                                        $FC
     .db $20, $A7, $00,          $FC,           $20, $B8, $00,                                                        $FC
@@ -221,7 +221,7 @@ L2_8702:
     ; No zero in the end, we go further.
 
 ; Bottom outlining.
-L2_877C:
+DialogueFrameBottomBackground:
     .db $22, $02, $09,          $ED, $EE, $EE, $EE, $EE, $EE, $EE, $EE, $EE, $EF
     .db $22, $22, $00,          $EB,           $22, $2B, $00,                $EC
     .db $22, $42, $09,          $FD, $FE, $FE, $FE, $FE, $FE, $FE, $FE, $FE, $FF
@@ -249,27 +249,27 @@ L2_877C:
     .db $C1 ; #881E
     .db $F8 ; #881F
 
-L2_8820:
+FixTitleScreenColors:
     LDY #$0F
-L2_8822:
-    LDA $8861, Y
+FixTitleScreenSetPaletteLoop:
+    LDA FixTitleScreenSpritePaletteAddr, Y
     STA BackPalette, Y
     STA SpritePalette, Y
     STA BackPaletteBk, Y
     STA SpritePaletteBk, Y
     DEY
-    BPL L2_8822
+    BPL FixTitleScreenSetPaletteLoop
 
-    LDY #$78 ; #8834
-    LDX #$00 ; #8836
-L2_8838:
-    LDA (L2_8871 + 0), Y
+    LDY #$78
+    LDX #$00
+FixTitleScreenOamCopyLoop:
+    LDA (FixTitleScreenSpritesAddr + 0), Y
     STA (OAM + 0), X
-    LDA (L2_8871 + 1), Y
+    LDA (FixTitleScreenSpritesAddr + 1), Y
     STA (OAM + 1), X
-    LDA (L2_8871 + 2), Y
+    LDA (FixTitleScreenSpritesAddr + 2), Y
     STA (OAM + 2), X
-    LDA (L2_8871 + 3), Y
+    LDA (FixTitleScreenSpritesAddr + 3), Y
     STA (OAM + 3), X
     INX
     INX
@@ -279,7 +279,7 @@ L2_8838:
     DEY
     DEY
     DEY
-    BPL L2_8838
+    BPL FixTitleScreenOamCopyLoop
 
     LDA #$9F                            ; Bit 7 is set, this means that value will be ignored. I don't get it.
     STA <NextChrBank1
@@ -287,13 +287,13 @@ L2_8838:
     RTS
 
 ; Default start screen palette.
-L2_8865:
+FixTitleScreenSpritePaletteAddr:
     .db $0F, $20, $36, $05
     .db $0F, $20, $17, $15
     .db $0F, $26, $17, $07
     .db $0F, $15, $36, $05
 
-L2_8871:                                ; These sprites will adjust fucked up background palette.
+FixTitleScreenSpritesAddr:              ; These sprites will adjust fucked up background palette.
     .db $2F, $01, %00000010, $70
     .db $37, $11, %00000010, $70
     .db $37, $02, %00000000, $88
@@ -380,13 +380,13 @@ L2_8937:
     CMP #$0C ; #893E
     BEQ L2_8967 ; #8940
 L2_8942:
-    LDA $8A57, X ; #8942
+    LDA L2_8A57, X ; #8942
     STA $04D0, X ; #8945
-    LDA $8A5B, X ; #8948
+    LDA L2_8A5B, X ; #8948
     STA $0420, X ; #894B
-    LDA $8A5F, X ; #894E
+    LDA L2_8A5F, X ; #894E
     STA $0510, X ; #8951
-    LDA $8A63, X ; #8954
+    LDA L2_8A63, X ; #8954
     STA $04F0, X ; #8957
     LDA #$00 ; #895A
     STA $0400, X ; #895C
@@ -423,7 +423,7 @@ L2_8985:
 L2_899C:
     LDA SpritePalette, X ; #899C
     STA $0385, X ; #899F
-    LDA $8A67, X ; #89A2
+    LDA L2_8A67, X ; #89A2
     STA SpritePalette, X ; #89A5
     DEX ; #89A8
     BPL L2_899C ; #89A9
@@ -684,9 +684,9 @@ L2_8A67:
     LDA <$31 ; #8B23
     ASL A ; #8B25
     TAY ; #8B26
-    LDA $8D28, Y ; #8B27
+    LDA (L2_8D28 + 0), Y ; #8B27
     STA $0510 ; #8B2A
-    LDA $8D29, Y ; #8B2D
+    LDA (L2_8D28 + 1), Y ; #8B2D
     STA $04F0 ; #8B30
     LDA <$31 ; #8B33
     CMP #$07 ; #8B35
@@ -708,13 +708,13 @@ L2_8A67:
     JMP L2_8B7F ; #8B5E
 L2_8B61:
     LDY <$31 ; #8B61
-    LDX $8D3E, Y ; #8B63
+    LDX L2_8D3E, Y ; #8B63
 L2_8B66:
     LDA <$31 ; #8B66
     CMP #$0B ; #8B68
     BCS L2_8B6C ; #8B6A
 L2_8B6C:
-    LDA $8D4A, X ; #8B6C
+    LDA L2_8D4A, X ; #8B6C
     BMI L2_8B79 ; #8B6F
     AND <$16 ; #8B71
     BNE L2_8B95 ; #8B73
@@ -735,20 +735,20 @@ L2_8B7F:
     AND #$01 ; #8B89
     TAX ; #8B8B
     LDA <$38, X ; #8B8C
-    AND $8E0E, Y ; #8B8E
+    AND L2_8E0E, Y ; #8B8E
     BEQ L2_8BF5 ; #8B91
     BNE L2_8B79 ; #8B93
 L2_8B95:
-    LDY $8D4B, X ; #8B95
-    LDX $8D86, Y ; #8B98
-    LDA $8D9E, X ; #8B9B
+    LDY $8D4B, X ; #8B95                ; Very strange address
+    LDX L2_8D86, Y ; #8B98
+    LDA L2_8D9E, X ; #8B9B
     STA <$31 ; #8B9E
     INX ; #8BA0
 L2_8BA1:
-    LDA $8D9E, X ; #8BA1
+    LDA L2_8D9E, X ; #8BA1
     BMI L2_8B7F ; #8BA4
     STA <$52 ; #8BA6
-    LDA $8D9F, X ; #8BA8
+    LDA $8D9F, X ; #8BA8                ; Very strange address
     STA $0480 ; #8BAB
     LDA #$00 ; #8BAE
     STA $0530 ; #8BB0
@@ -799,7 +799,7 @@ L2_8C06:
     LDA $0481 ; #8C09
     AND #$01 ; #8C0C
     TAY ; #8C0E
-    LDA $8D26, Y ; #8C0F
+    LDA L2_8D26, Y ; #8C0F
     STA $04F1 ; #8C12
     DEC $0481 ; #8C15
     BNE L2_8C06 ; #8C18
@@ -954,9 +954,11 @@ L2_8D18:
     RTS ; #8D25
 
 
+L2_8D26:
     .db $2A ; #8D26
     .db $26 ; #8D27
 
+L2_8D28:
     .db $58 ; #8D28
     .db $D8 ; #8D29
     .db $98 ; #8D2A
@@ -979,6 +981,8 @@ L2_8D18:
     .db $98 ; #8D3B
     .db $88 ; #8D3C
     .db $D8 ; #8D3D
+
+L2_8D3E:
     .db $00 ; #8D3E
     .db $05 ; #8D3F
     .db $0A ; #8D40
@@ -990,28 +994,33 @@ L2_8D18:
     .db $2A ; #8D46
     .db $2D ; #8D47
     .db $32 ; #8D48
-    .db $35 ; #8D49
+    .db $35 ; #8D49                     ; Offsets in following data.
 
+L2_8D4A:
     .db $04 ; #8D4A
     .db $00 ; #8D4B
     .db $02 ; #8D4C
     .db $01 ; #8D4D
     .db $FF ; #8D4E
+
     .db $08 ; #8D4F
     .db $02 ; #8D50
     .db $04 ; #8D51
     .db $03 ; #8D52
     .db $FF ; #8D53
+
     .db $01 ; #8D54
     .db $04 ; #8D55
     .db $04 ; #8D56
     .db $05 ; #8D57
     .db $FF ; #8D58
+
     .db $01 ; #8D59
     .db $06 ; #8D5A
     .db $08 ; #8D5B
     .db $07 ; #8D5C
     .db $FF ; #8D5D
+
     .db $01 ; #8D5E
     .db $08 ; #8D5F
     .db $02 ; #8D60
@@ -1019,11 +1028,13 @@ L2_8D18:
     .db $08 ; #8D62
     .db $0A ; #8D63
     .db $FF ; #8D64
+
     .db $01 ; #8D65
     .db $0B ; #8D66
     .db $04 ; #8D67
     .db $0C ; #8D68
     .db $FF ; #8D69
+
     .db $08 ; #8D6A
     .db $0D ; #8D6B
     .db $04 ; #8D6C
@@ -1031,20 +1042,25 @@ L2_8D18:
     .db $01 ; #8D6E
     .db $15 ; #8D6F
     .db $FF ; #8D70
+
     .db $04 ; #8D71
     .db $16 ; #8D72
     .db $FF ; #8D73
+
     .db $01 ; #8D74
     .db $0F ; #8D75
     .db $FF ; #8D76
+
     .db $01 ; #8D77
     .db $10 ; #8D78
     .db $02 ; #8D79
     .db $11 ; #8D7A
     .db $FF ; #8D7B
+
     .db $02 ; #8D7C
     .db $17 ; #8D7D
     .db $FF ; #8D7E
+
     .db $08 ; #8D7F
     .db $12 ; #8D80
     .db $02 ; #8D81
@@ -1052,6 +1068,8 @@ L2_8D18:
     .db $04 ; #8D83
     .db $14 ; #8D84
     .db $FF ; #8D85
+
+L2_8D86:
     .db $00 ; #8D86
     .db $04 ; #8D87
     .db $08 ; #8D88
@@ -1076,70 +1094,86 @@ L2_8D18:
     .db $60 ; #8D9B
     .db $64 ; #8D9C
     .db $6C ; #8D9D
+
+L2_8D9E:
     .db $01 ; #8D9E
     .db $04 ; #8D9F
     .db $40 ; #8DA0
     .db $FF ; #8DA1
+
     .db $02 ; #8DA2
     .db $02 ; #8DA3
     .db $30 ; #8DA4
     .db $FF ; #8DA5
+
     .db $00 ; #8DA6
     .db $08 ; #8DA7
     .db $40 ; #8DA8
     .db $FF ; #8DA9
+
     .db $03 ; #8DAA
     .db $04 ; #8DAB
     .db $30 ; #8DAC
     .db $02 ; #8DAD
     .db $30 ; #8DAE
     .db $FF ; #8DAF
+
     .db $00 ; #8DB0
     .db $01 ; #8DB1
     .db $30 ; #8DB2
     .db $FF ; #8DB3
+
     .db $0B ; #8DB4
     .db $04 ; #8DB5
     .db $30 ; #8DB6
     .db $FF ; #8DB7
+
     .db $01 ; #8DB8
     .db $01 ; #8DB9
     .db $30 ; #8DBA
     .db $08 ; #8DBB
     .db $30 ; #8DBC
     .db $FF ; #8DBD
+
     .db $0B ; #8DBE
     .db $08 ; #8DBF
     .db $40 ; #8DC0
     .db $FF ; #8DC1
+
     .db $0B ; #8DC2
     .db $01 ; #8DC3
     .db $20 ; #8DC4
     .db $FF ; #8DC5
+
     .db $06 ; #8DC6
     .db $02 ; #8DC7
     .db $30 ; #8DC8
     .db $FF ; #8DC9
+
     .db $05 ; #8DCA
     .db $08 ; #8DCB
     .db $30 ; #8DCC
     .db $02 ; #8DCD
     .db $30 ; #8DCE
     .db $FF ; #8DCF
+
     .db $04 ; #8DD0
     .db $01 ; #8DD1
     .db $30 ; #8DD2
     .db $04 ; #8DD3
     .db $30 ; #8DD4
     .db $FF ; #8DD5
+
     .db $06 ; #8DD6
     .db $04 ; #8DD7
     .db $30 ; #8DD8
     .db $FF ; #8DD9
+
     .db $05 ; #8DDA
     .db $08 ; #8DDB
     .db $30 ; #8DDC
     .db $FF ; #8DDD
+
     .db $07 ; #8DDE
     .db $04 ; #8DDF
     .db $38 ; #8DE0
@@ -1148,34 +1182,42 @@ L2_8D18:
     .db $08 ; #8DE3
     .db $28 ; #8DE4
     .db $FF ; #8DE5
+
     .db $09 ; #8DE6
     .db $01 ; #8DE7
     .db $40 ; #8DE8
     .db $FF ; #8DE9
+
     .db $0A ; #8DEA
     .db $01 ; #8DEB
     .db $40 ; #8DEC
     .db $FF ; #8DED
+
     .db $08 ; #8DEE
     .db $02 ; #8DEF
     .db $40 ; #8DF0
     .db $FF ; #8DF1
+
     .db $02 ; #8DF2
     .db $08 ; #8DF3
     .db $30 ; #8DF4
     .db $FF ; #8DF5
+
     .db $04 ; #8DF6
     .db $02 ; #8DF7
     .db $20 ; #8DF8
     .db $FF ; #8DF9
+
     .db $03 ; #8DFA
     .db $04 ; #8DFB
     .db $40 ; #8DFC
     .db $FF ; #8DFD
+
     .db $04 ; #8DFE
     .db $01 ; #8DFF
     .db $30 ; #8E00
     .db $FF ; #8E01
+
     .db $06 ; #8E02
     .db $04 ; #8E03
     .db $28 ; #8E04
@@ -1184,10 +1226,13 @@ L2_8D18:
     .db $08 ; #8E07
     .db $38 ; #8E08
     .db $FF ; #8E09
+
     .db $09 ; #8E0A
     .db $02 ; #8E0B
     .db $40 ; #8E0C
     .db $FF ; #8E0D
+
+L2_8E0E:
     .db $01 ; #8E0E
     .db $02 ; #8E0F
     .db $04 ; #8E10
@@ -1709,7 +1754,7 @@ L2_9000:
     ASL A ; #9029
     TAY ; #902A
     PHA ; #902B
-    LDX $91F3, Y ; #902C
+    LDX L2_91F3, Y ; #902C
     BEQ L2_903C ; #902F
     JSR L2_8000 ; #9031
     LDX #$08 ; #9034
@@ -1721,10 +1766,10 @@ L2_903C:
 L2_9041:
     PLA ; #9041
     TAY ; #9042
-    LDA $91F4, Y ; #9043
+    LDA (L2_91F3 + 1), Y ; #9043
     ORA #$80 ; #9046
     STA <$1B ; #9048
-    LDA $91F3, Y ; #904A
+    LDA (L2_91F3 + 0), Y ; #904A
     BEQ L2_9052 ; #904D
     SEC ; #904F
     SBC #$04 ; #9050
@@ -1736,7 +1781,7 @@ L2_9052:
     TAY ; #9056
     LDX #$00 ; #9057
 L2_9059:
-    LDA $922F, Y ; #9059
+    LDA L2_922F, Y ; #9059
     STA $0320, X ; #905C
     INY ; #905F
     INX ; #9060
@@ -1751,7 +1796,7 @@ L2_9059:
     BNE L2_9088 ; #9071
     LDX #$03 ; #9073
 L2_9075:
-    LDA $922B, X ; #9075
+    LDA L2_922B, X ; #9075
     STA $0200, X ; #9078
     DEX ; #907B
     BPL L2_9075 ; #907C
@@ -1765,7 +1810,7 @@ L2_9088:
     STA <$1A ; #9088
     LDX #$00 ; #908A
 L2_908C:
-    LDA $922F, Y ; #908C
+    LDA L2_922F, Y ; #908C
     STA $0330, X ; #908F
     INY ; #9092
     INX ; #9093
@@ -1776,7 +1821,7 @@ L2_908C:
     BNE L2_90A9 ; #909C
     LDY #$07 ; #909E
 L2_90A0:
-    LDA $9223, Y ; #90A0
+    LDA L2_9223, Y ; #90A0
     STA $0200, Y ; #90A3
     DEY ; #90A6
     BPL L2_90A0 ; #90A7
@@ -1792,11 +1837,11 @@ L2_90B1:
     LDA #$00 ; #90B9
     STA $0410, X ; #90BB
     STA $0430, X ; #90BE
-    LDA $929F, X ; #90C1
+    LDA L2_929F, X ; #90C1
     STA $0420, X ; #90C4
-    LDA $92A2, X ; #90C7
+    LDA L2_92A2, X ; #90C7
     STA $0510, X ; #90CA
-    LDA $92A5, X ; #90CD
+    LDA L2_92A5, X ; #90CD
     STA $04F0, X ; #90D0
     DEX ; #90D3
     BPL L2_90B1 ; #90D4
@@ -1910,7 +1955,7 @@ L2_91C1:
     TAY ; #91C9
     LDA $04F3 ; #91CA
     CLC ; #91CD
-    ADC $92A8, Y ; #91CE
+    ADC L2_92A8, Y ; #91CE
     STA $04F3 ; #91D1
     INC $0493 ; #91D4
     LDA $0493 ; #91D7
@@ -1927,187 +1972,127 @@ L2_91EC:
     LDA #$08 ; #91EC
     STA <$97 ; #91EE
     JMP L7_F392 ; #91F0
+
+L2_91F3:
     .db $05 ; #91F3
     .db $0D ; #91F4
     .db $00 ; #91F5
     .db $00 ; #91F6
+
     .db $07 ; #91F7
     .db $0E ; #91F8
     .db $00 ; #91F9
     .db $00 ; #91FA
+
     .db $07 ; #91FB
     .db $0E ; #91FC
     .db $00 ; #91FD
     .db $00 ; #91FE
+
     .db $07 ; #91FF
     .db $0E ; #9200
     .db $00 ; #9201
     .db $00 ; #9202
+
     .db $07 ; #9203
     .db $0E ; #9204
     .db $00 ; #9205
     .db $00 ; #9206
+
     .db $07 ; #9207
     .db $0E ; #9208
     .db $00 ; #9209
     .db $00 ; #920A
+
     .db $07 ; #920B
     .db $0E ; #920C
     .db $00 ; #920D
     .db $00 ; #920E
+
     .db $00 ; #920F
     .db $0E ; #9210
     .db $00 ; #9211
     .db $00 ; #9212
+
     .db $07 ; #9213
     .db $0E ; #9214
     .db $00 ; #9215
     .db $00 ; #9216
+
     .db $07 ; #9217
     .db $0E ; #9218
     .db $00 ; #9219
     .db $00 ; #921A
+
     .db $06 ; #921B
     .db $0E ; #921C
     .db $00 ; #921D
     .db $00 ; #921E
+
     .db $04 ; #921F
     .db $0D ; #9220
     .db $00 ; #9221
     .db $00 ; #9222
-    .db $3F ; #9223
-    .db $EE ; #9224
-    .db $03 ; #9225
-    .db $68 ; #9226
-    .db $57 ; #9227
-    .db $EF ; #9228
-    .db $03 ; #9229
-    .db $70 ; #922A
-    .db $57 ; #922B
-    .db $F7 ; #922C
-    .db $00 ; #922D
-    .db $70 ; #922E
-    .db $0F ; #922F
-    .db $19 ; #9230
-    .db $37 ; #9231
-    .db $20 ; #9232
-    .db $0F ; #9233
-    .db $17 ; #9234
-    .db $37 ; #9235
-    .db $15 ; #9236
-    .db $0F ; #9237
-    .db $17 ; #9238
-    .db $37 ; #9239
-    .db $20 ; #923A
-    .db $0F ; #923B
-    .db $17 ; #923C
-    .db $37 ; #923D
-    .db $07 ; #923E
-    .db $0F ; #923F
-    .db $10 ; #9240
-    .db $15 ; #9241
-    .db $20 ; #9242
-    .db $0F ; #9243
-    .db $10 ; #9244
-    .db $20 ; #9245
-    .db $15 ; #9246
-    .db $0F ; #9247
-    .db $20 ; #9248
-    .db $10 ; #9249
-    .db $15 ; #924A
-    .db $0F ; #924B
-    .db $20 ; #924C
-    .db $10 ; #924D
-    .db $27 ; #924E
-    .db $0F ; #924F
-    .db $17 ; #9250
-    .db $37 ; #9251
-    .db $20 ; #9252
-    .db $0F ; #9253
-    .db $17 ; #9254
-    .db $37 ; #9255
-    .db $11 ; #9256
-    .db $0F ; #9257
-    .db $17 ; #9258
-    .db $20 ; #9259
-    .db $29 ; #925A
-    .db $0F ; #925B
-    .db $37 ; #925C
-    .db $20 ; #925D
-    .db $11 ; #925E
-    .db $0F ; #925F
-    .db $27 ; #9260
-    .db $37 ; #9261
-    .db $20 ; #9262
-    .db $0F ; #9263
-    .db $27 ; #9264
-    .db $37 ; #9265
-    .db $12 ; #9266
-    .db $0F ; #9267
-    .db $27 ; #9268
-    .db $37 ; #9269
-    .db $25 ; #926A
-    .db $0F ; #926B
-    .db $00 ; #926C
-    .db $10 ; #926D
-    .db $20 ; #926E
-    .db $0F ; #926F
-    .db $0F ; #9270
-    .db $37 ; #9271
-    .db $16 ; #9272
-    .db $0F ; #9273
-    .db $0F ; #9274
-    .db $30 ; #9275
-    .db $10 ; #9276
-    .db $0F ; #9277
-    .db $0F ; #9278
-    .db $30 ; #9279
-    .db $15 ; #927A
-    .db $0F ; #927B
-    .db $0F ; #927C
-    .db $37 ; #927D
-    .db $25 ; #927E
-    .db $0F ; #927F
-    .db $0F ; #9280
-    .db $37 ; #9281
-    .db $16 ; #9282
-    .db $0F ; #9283
-    .db $0F ; #9284
-    .db $30 ; #9285
-    .db $10 ; #9286
-    .db $0F ; #9287
-    .db $0F ; #9288
-    .db $0F ; #9289
-    .db $0F ; #928A
-    .db $0F ; #928B
-    .db $17 ; #928C
-    .db $12 ; #928D
-    .db $20 ; #928E
-    .db $0F ; #928F
-    .db $0F ; #9290
-    .db $37 ; #9291
-    .db $15 ; #9292
-    .db $0F ; #9293
-    .db $0F ; #9294
-    .db $30 ; #9295
-    .db $10 ; #9296
-    .db $0F ; #9297
-    .db $0F ; #9298
-    .db $0F ; #9299
-    .db $0F ; #929A
-    .db $0F ; #929B
-    .db $0F ; #929C
-    .db $0F ; #929D
-    .db $0F ; #929E
+
+L2_9223:
+    .db $3F, $EE, %00000011, $68
+    .db $57, $EF, %00000011, $70
+
+L2_922B:
+    .db $57, $F7, %00000000, $70
+
+L2_922F:
+    .db $0F, $19, $37, $20
+    .db $0F, $17, $37, $15
+    .db $0F, $17, $37, $20
+    .db $0F, $17, $37, $07
+
+    .db $0F, $10, $15, $20
+    .db $0F, $10, $20, $15
+    .db $0F, $20, $10, $15
+    .db $0F, $20, $10, $27
+
+    .db $0F, $17, $37, $20
+    .db $0F, $17, $37, $11
+    .db $0F, $17, $20, $29
+    .db $0F, $37, $20, $11
+
+    .db $0F, $27, $37, $20
+    .db $0F, $27, $37, $12
+    .db $0F, $27, $37, $25
+    .db $0F, $00, $10, $20
+
+    .db $0F, $0F, $37, $16
+    .db $0F, $0F, $30, $10
+    .db $0F, $0F, $30, $15
+    .db $0F, $0F, $37, $25
+
+    .db $0F, $0F, $37, $16
+    .db $0F, $0F, $30, $10
+    .db $0F, $0F, $0F, $0F
+    .db $0F, $17, $12, $20
+
+    .db $0F, $0F, $37, $15
+    .db $0F, $0F, $30, $10
+    .db $0F, $0F, $0F, $0F
+    .db $0F, $0F, $0F, $0F
+
+L2_929F:
     .db $04 ; #929F
     .db $8A ; #92A0
     .db $88 ; #92A1
+
+L2_92A2:
     .db $4C ; #92A2
     .db $4C ; #92A3
     .db $38 ; #92A4
+
+L2_92A5:
     .db $F8 ; #92A5
     .db $38 ; #92A6
     .db $F8 ; #92A7
+
+L2_92A8:
     .db $01 ; #92A8
     .db $FF ; #92A9
     .db $FF ; #92AA
@@ -2116,25 +2101,25 @@ L2_91EC:
 
 L2_92AC:
     LDY <$31 ; #92AC
-    LDA $94B6, Y                        ; 0 <= Y < 12 ?
+    LDA L2_94B6, Y                      ; 0 <= Y < 12 ?
     STA <$10 ; #92B1
 L2_92B3:
     LDX <$10 ; #92B3
     INC <$10 ; #92B5
-    LDA $94F7 ; #92B7
-    STA $0360 ; #92BA
-    LDA $94F6 ; #92BD
-    STA $0361 ; #92C0
+    LDA (L2_94F6 + 1)
+    STA $0360
+    LDA (L2_94F6 + 0)
+    STA $0361
     LDY #$07 ; #92C3
     STY $0362 ; #92C5
-    LDA $94C2, X ; #92C8
+    LDA L2_94C2, X ; #92C8
     ASL A ; #92CB
     ASL A ; #92CC
     ASL A ; #92CD
     ADC #$07 ; #92CE
     TAX ; #92D0
 L2_92D1:
-    LDA $9506, X ; #92D1
+    LDA L2_9506, X ; #92D1
     STA $0363, Y ; #92D4
     DEX ; #92D7
     DEY ; #92D8
@@ -2144,17 +2129,17 @@ L2_92D1:
     JSR L2_947B ; #92E0
     LDX <$10 ; #92E3
     INC <$10 ; #92E5
-    LDY $94C2, X ; #92E7
-    LDA $9536, Y ; #92EA
+    LDY L2_94C2, X ; #92E7
+    LDA L2_9536, Y ; #92EA
     STA <$0C ; #92ED
-    LDA $954A, Y ; #92EF
+    LDA L2_954A, Y ; #92EF
     STA <$0D ; #92F2
     LDX #$00 ; #92F4
     STX <$11 ; #92F6
     STX <$12 ; #92F8
 L2_92FA:
     LDX <$12 ; #92FA
-    LDY $94FE, X ; #92FC
+    LDY L2_94FE, X ; #92FC
     STY <$0E ; #92FF
     LDX #$17 ; #9301
     LDA #$A4 ; #9303
@@ -2166,9 +2151,9 @@ L2_9305:
     LDX <$12 ; #930C
     LDA #$17 ; #930E
     STA <$13 ; #9310
-    LDA $94FB, X ; #9312
+    LDA L2_94FB, X ; #9312
     STA $0360 ; #9315
-    LDA $94F8, X ; #9318
+    LDA L2_94F8, X ; #9318
     STA $0361 ; #931B
 L2_931E:
     LDY <$11 ; #931E
@@ -2253,13 +2238,13 @@ L2_93BB:
     JSR L2_949B ; #93BF
     LDX #$00 ; #93C2
 L2_93C4:
-    LDA $94FB, X ; #93C4
+    LDA L2_94FB, X ; #93C4
     STA $0360 ; #93C7
-    LDA $94F8, X ; #93CA
+    LDA L2_94F8, X ; #93CA
     STA $0361 ; #93CD
     LDA #$17 ; #93D0
     STA $0362 ; #93D2
-    LDY $94FF, X ; #93D5
+    LDY $94FF, X ; #93D5                ; Another strange address.
     INX ; #93D8
     STX <$0E ; #93D9
     LDX #$00 ; #93DB
@@ -2303,13 +2288,13 @@ L2_941F:
     JMP L2_940D ; #9422
 L2_9425:
     LDX <$10 ; #9425
-    LDA $94C2, X ; #9427
+    LDA L2_94C2, X ; #9427
     BMI L2_9457 ; #942A
     LDX #$00 ; #942C
 L2_942E:
-    LDA $94FB, X ; #942E
+    LDA L2_94FB, X ; #942E
     STA $0360 ; #9431
-    LDA $94F8, X ; #9434
+    LDA L2_94F8, X ; #9434
     STA $0361 ; #9437
     LDY #$17 ; #943A
     STY $0362 ; #943C
@@ -2365,10 +2350,12 @@ L2_947B:
     STA <$16 ; #9498
 L2_949A:
     RTS ; #949A
+
+
 L2_949B:
     LDX #$04 ; #949B
 L2_949D:
-    LDA $9501, X ; #949D
+    LDA L2_9501, X ; #949D
     STA $03E0, X ; #94A0
     DEX ; #94A3
     BPL L2_949D ; #94A4
@@ -2382,6 +2369,7 @@ L2_94B1:
     STA <$1C ; #94B3
     RTS ; #94B5
 
+L2_94B6:
     .db $00 ; #94B6
     .db $03 ; #94B7
     .db $06 ; #94B8
@@ -2393,38 +2381,49 @@ L2_94B1:
     .db $18 ; #94BE
     .db $1B ; #94BF
     .db $1E ; #94C0
-    .db $2B                             ; Everything before this is just (idx * 3), but last item breaks the sequence.
+    .db $2B                             ; These are offsets in the following data.
 
+L2_94C2:
     .db $03 ; #94C2
     .db $04 ; #94C3
     .db $FF ; #94C4
+
     .db $01 ; #94C5
     .db $05 ; #94C6
     .db $FF ; #94C7
+
     .db $01 ; #94C8
     .db $06 ; #94C9
     .db $FF ; #94CA
+
     .db $01 ; #94CB
     .db $07 ; #94CC
     .db $FF ; #94CD
+
     .db $01 ; #94CE
     .db $08 ; #94CF
     .db $FF ; #94D0
+
     .db $01 ; #94D1
     .db $09 ; #94D2
     .db $FF ; #94D3
+
     .db $01 ; #94D4
     .db $0A ; #94D5
     .db $FF ; #94D6
+
     .db $01 ; #94D7
     .db $0B ; #94D8
     .db $FF ; #94D9
+
     .db $01 ; #94DA
     .db $0C ; #94DB
     .db $FF ; #94DC
+
     .db $01 ; #94DD
     .db $0D ; #94DE
     .db $FF ; #94DF
+
     .db $00 ; #94E0
     .db $0E ; #94E1
     .db $01 ; #94E2
@@ -2438,6 +2437,7 @@ L2_94B1:
     .db $05 ; #94EA
     .db $13 ; #94EB
     .db $FF ; #94EC
+
     .db $00 ; #94ED
     .db $00 ; #94EE
     .db $01 ; #94EF
@@ -2448,27 +2448,33 @@ L2_94B1:
     .db $03 ; #94F4
     .db $FF ; #94F5
 
-    .db $23 ; #94F6
-    .db $22 ; #94F7
+L2_94F6:
+    .db $23
+    .db $22
 
+L2_94F8:
     .db $C4 ; #94F8
     .db $04 ; #94F9
     .db $44 ; #94FA
 
+L2_94FB:
     .db $22 ; #94FB
     .db $23 ; #94FC
     .db $23 ; #94FD
 
-    .db $20 ; #94FE
-
+L2_94FE:
+    .db $20
     .db $38 ; #94FF
     .db $50 ; #9500
-    .db $23 ; #9501
 
+L2_9501:
+    .db $23 ; #9501
     .db $7C ; #9502
     .db $00 ; #9503
     .db $AC ; #9504
     .db $FF ; #9505
+
+L2_9506:
     .db $8C ; #9506
     .db $91 ; #9507
     .db $92 ; #9508
@@ -2477,6 +2483,7 @@ L2_94B1:
     .db $A4 ; #950B
     .db $A4 ; #950C
     .db $A4 ; #950D
+
     .db $90 ; #950E
     .db $8A ; #950F
     .db $8D ; #9510
@@ -2485,6 +2492,7 @@ L2_94B1:
     .db $9D ; #9513
     .db $A4 ; #9514
     .db $A4 ; #9515
+
     .db $96 ; #9516
     .db $98 ; #9517
     .db $97 ; #9518
@@ -2493,6 +2501,7 @@ L2_94B1:
     .db $A4 ; #951B
     .db $A4 ; #951C
     .db $A4 ; #951D
+
     .db $8F ; #951E
     .db $8A ; #951F
     .db $9D ; #9520
@@ -2501,6 +2510,7 @@ L2_94B1:
     .db $8A ; #9523
     .db $9D ; #9524
     .db $A4 ; #9525
+
     .db $8D ; #9526
     .db $8A ; #9527
     .db $95 ; #9528
@@ -2509,6 +2519,7 @@ L2_94B1:
     .db $A4 ; #952B
     .db $A4 ; #952C
     .db $A4 ; #952D
+
     .db $8A ; #952E
     .db $95 ; #952F
     .db $95 ; #9530
@@ -2517,46 +2528,52 @@ L2_94B1:
     .db $A4 ; #9533
     .db $A4 ; #9534
     .db $A4 ; #9535
-    .db $5E ; #9536
-    .db $E4 ; #9537
-    .db $47 ; #9538
-    .db $0B ; #9539
-    .db $66 ; #953A
-    .db $5C ; #953B
-    .db $AD ; #953C
-    .db $AD ; #953D
-    .db $53 ; #953E
-    .db $D9 ; #953F
-    .db $13 ; #9540
-    .db $41 ; #9541
-    .db $A4 ; #9542
-    .db $1B ; #9543
-    .db $5F ; #9544
-    .db $A2 ; #9545
-    .db $D9 ; #9546
-    .db $38 ; #9547
-    .db $3F ; #9548
-    .db $62 ; #9549
-    .db $95 ; #954A
-    .db $95 ; #954B
-    .db $96 ; #954C
-    .db $97 ; #954D
-    .db $97 ; #954E
-    .db $98 ; #954F
-    .db $99 ; #9550
-    .db $99 ; #9551
-    .db $9A ; #9552
-    .db $9A ; #9553
-    .db $9B ; #9554
-    .db $9B ; #9555
-    .db $9B ; #9556
-    .db $9C ; #9557
-    .db $9C ; #9558
-    .db $9C ; #9559
-    .db $9C ; #955A
-    .db $9D ; #955B
-    .db $9D ; #955C
-    .db $9D ; #955D
+
+L2_9536:
+    .db LOW(L2_955E)
+    .db LOW(L2_95E4)
+    .db LOW(L2_9647)
+    .db LOW(L2_970B)
+    .db LOW(L2_9766)
+    .db LOW(L2_985C)
+    .db LOW(L2_99AD)
+    .db LOW(L2_99AD)
+    .db LOW(L2_9A53)
+    .db LOW(L2_9AD9)
+    .db LOW(L2_9B13)
+    .db LOW(L2_9B41)
+    .db LOW(L2_9BA4)
+    .db LOW(L2_9C1B)
+    .db LOW(L2_9C5F)
+    .db LOW(L2_9CA2)
+    .db LOW(L2_9CD9)
+    .db LOW(L2_9D38)
+    .db LOW(L2_9D3F)
+    .db LOW(L2_9D62)
+
+L2_954A:
+    .db HIGH(L2_955E)
+    .db HIGH(L2_95E4)
+    .db HIGH(L2_9647)
+    .db HIGH(L2_970B)
+    .db HIGH(L2_9766)
+    .db HIGH(L2_985C)
+    .db HIGH(L2_99AD)
+    .db HIGH(L2_99AD)
+    .db HIGH(L2_9A53)
+    .db HIGH(L2_9AD9)
+    .db HIGH(L2_9B13)
+    .db HIGH(L2_9B41)
+    .db HIGH(L2_9BA4)
+    .db HIGH(L2_9C1B)
+    .db HIGH(L2_9C5F)
+    .db HIGH(L2_9CA2)
+    .db HIGH(L2_9CD9)
+    .db HIGH(L2_9D38)
+    .db HIGH(L2_9D3F)
+    .db HIGH(L2_9D62)
+
+L2_955E:
     .db $98 ; #955E
     .db $94 ; #955F
     .db $AF ; #9560
@@ -2691,6 +2708,8 @@ L2_94B1:
     .db $9C ; #95E1
     .db $A9 ; #95E2
     .db $FF ; #95E3
+
+L2_95E4:
     .db $92 ; #95E4
     .db $AD ; #95E5
     .db $95 ; #95E6
@@ -2790,6 +2809,8 @@ L2_94B1:
     .db $A2 ; #9644
     .db $A5 ; #9645
     .db $FF ; #9646
+
+L2_9647:
     .db $90 ; #9647
     .db $98 ; #9648
     .db $98 ; #9649
@@ -2986,6 +3007,8 @@ L2_94B1:
     .db $A2 ; #9708
     .db $A8 ; #9709
     .db $FF ; #970A
+
+L2_970B:
     .db $96 ; #970B
     .db $8E ; #970C
     .db $8C ; #970D
@@ -3077,6 +3100,8 @@ L2_94B1:
     .db $9C ; #9763
     .db $A9 ; #9764
     .db $FF ; #9765
+
+L2_9766:
     .db $91 ; #9766
     .db $8A ; #9767
     .db $A4 ; #9768
@@ -3323,6 +3348,8 @@ L2_94B1:
     .db $94 ; #9859
     .db $A5 ; #985A
     .db $FF ; #985B
+
+L2_985C:
     .db $91 ; #985C
     .db $92 ; #985D
     .db $A4 ; #985E
@@ -3660,6 +3687,8 @@ L2_94B1:
     .db $97 ; #99AA
     .db $A9 ; #99AB
     .db $FF ; #99AC
+
+L2_99AD:
     .db $8C ; #99AD
     .db $8A ; #99AE
     .db $9B ; #99AF
@@ -3826,6 +3855,8 @@ L2_94B1:
     .db $96 ; #9A50
     .db $A5 ; #9A51
     .db $FF ; #9A52
+
+L2_9A53:
     .db $92 ; #9A53
     .db $A4 ; #9A54
     .db $95 ; #9A55
@@ -3960,6 +3991,8 @@ L2_94B1:
     .db $99 ; #9AD6
     .db $A9 ; #9AD7
     .db $FF ; #9AD8
+
+L2_9AD9:
     .db $A0 ; #9AD9
     .db $8A ; #9ADA
     .db $9D ; #9ADB
@@ -4018,6 +4051,8 @@ L2_94B1:
     .db $8E ; #9B10
     .db $A5 ; #9B11
     .db $FF ; #9B12
+
+L2_9B13:
     .db $90 ; #9B13
     .db $98 ; #9B14
     .db $98 ; #9B15
@@ -4064,6 +4099,8 @@ L2_94B1:
     .db $98 ; #9B3E
     .db $A9 ; #9B3F
     .db $FF ; #9B40
+
+L2_9B41:
     .db $9D ; #9B41
     .db $91 ; #9B42
     .db $8A ; #9B43
@@ -4163,6 +4200,8 @@ L2_94B1:
     .db $9D ; #9BA1
     .db $A5 ; #9BA2
     .db $FF ; #9BA3
+
+L2_9BA4:
     .db $92 ; #9BA4
     .db $AD ; #9BA5
     .db $96 ; #9BA6
@@ -4282,6 +4321,8 @@ L2_94B1:
     .db $A2 ; #9C18
     .db $A9 ; #9C19
     .db $FF ; #9C1A
+
+L2_9C1B:
     .db $A2 ; #9C1B
     .db $98 ; #9C1C
     .db $9E ; #9C1D
@@ -4350,6 +4391,8 @@ L2_94B1:
     .db $9C ; #9C5C
     .db $A9 ; #9C5D
     .db $FF ; #9C5E
+
+L2_9C5F:
     .db $92 ; #9C5F
     .db $A4 ; #9C60
     .db $90 ; #9C61
@@ -4417,6 +4460,8 @@ L2_94B1:
     .db $9C ; #9C9F
     .db $A9 ; #9CA0
     .db $FF ; #9CA1
+
+L2_9CA2:
     .db $90 ; #9CA2
     .db $98 ; #9CA3
     .db $95 ; #9CA4
@@ -4472,6 +4517,8 @@ L2_94B1:
     .db $94 ; #9CD6
     .db $A5 ; #9CD7
     .db $FF ; #9CD8
+
+L2_9CD9:
     .db $A0 ; #9CD9
     .db $8E ; #9CDA
     .db $95 ; #9CDB
@@ -4567,6 +4614,8 @@ L2_94B1:
     .db $90 ; #9D35
     .db $A8 ; #9D36
     .db $FF ; #9D37
+
+L2_9D38:
     .db $9B ; #9D38
     .db $92 ; #9D39
     .db $90 ; #9D3A
@@ -4574,6 +4623,8 @@ L2_94B1:
     .db $9D ; #9D3C
     .db $A9 ; #9D3D
     .db $FF ; #9D3E
+
+L2_9D3F:
     .db $A2 ; #9D3F
     .db $8E ; #9D40
     .db $9C ; #9D41
@@ -4609,6 +4660,8 @@ L2_94B1:
     .db $A5 ; #9D5F
     .db $A5 ; #9D60
     .db $FF ; #9D61
+
+L2_9D62:
     .db $9D ; #9D62
     .db $91 ; #9D63
     .db $8E ; #9D64
@@ -4655,6 +4708,7 @@ L2_94B1:
     .db $A4 ; #9D8D
     .db $A6 ; #9D8E
     .db $FF ; #9D8F
+
     .db $10 ; #9D90
     .db $00 ; #9D91
     .db $00 ; #9D92
@@ -6226,6 +6280,8 @@ L2_A400
     .db $00 ; #A40D
     .db $00 ; #A40E
     .db $08 ; #A40F
+
+L2_A410:
     LDX #$00 ; #A410
     JSR L2_A46B ; #A412
     LDX <$37 ; #A415
@@ -6299,15 +6355,15 @@ L2_A489:
     PHA ; #A48A
     ASL A ; #A48B
     TAY ; #A48C
-    LDA $A550, Y ; #A48D
+    LDA (L2_A550 + 0), Y ; #A48D
     STA $0516, X ; #A490
-    LDA $A551, Y ; #A493
+    LDA (L2_A550 + 1), Y ; #A493
     STA $04F6, X ; #A496
     PLA ; #A499
     TAY ; #A49A
     AND #$01 ; #A49B
     PHA ; #A49D
-    LDA $A560, Y ; #A49E
+    LDA L2_A560, Y ; #A49E
     STA <$00 ; #A4A1
     PLA ; #A4A3
     TAY ; #A4A4
@@ -6318,7 +6374,7 @@ L2_A489:
     CLC ; #A4B0
     ADC <$00 ; #A4B1
     TAY ; #A4B3
-    LDA $A568, Y ; #A4B4
+    LDA L2_A568, Y ; #A4B4
     STA $0426, X ; #A4B7
     LDA #$80 ; #A4BA
     STA $04D6, X ; #A4BC
@@ -6412,6 +6468,7 @@ L2_A545:
     .db $92                             ; I
     .db $93                             ; J
 
+L2_A550:
     .db $38 ; #A550
     .db $38 ; #A551
     .db $38 ; #A552
@@ -6429,6 +6486,7 @@ L2_A545:
     .db $B8 ; #A55E
     .db $C8 ; #A55F
 
+L2_A560:
     .db $04 ; #A560
     .db $08 ; #A561
     .db $04 ; #A562
@@ -6438,6 +6496,7 @@ L2_A545:
     .db $00 ; #A566
     .db $00 ; #A567
 
+L2_A568:
     .db $2D ; #A568
     .db $2D ; #A569
     .db $2D ; #A56A
@@ -6487,13 +6546,13 @@ L2_A59B:
     STA $04D0 ; #A5AC
     STA $04D1 ; #A5AF
 L2_A5B2:
-    LDA $A67F, X
+    LDA (L2_A67F + 0), X
     STA (OAM + 0), X
-    LDA $A680, X
+    LDA (L2_A67F + 1), X
     STA (OAM + 1), X
-    LDA $A681, X
+    LDA (L2_A67F + 2), X
     STA (OAM + 2), X
-    LDA $A682, X
+    LDA (L2_A67F + 3), X
     STA (OAM + 3), X
     INX
     INX
@@ -6513,7 +6572,7 @@ L2_A5D7:
     BEQ L2_A5EC ; #A5E1
     AND #$01 ; #A5E3
     TAY ; #A5E5
-    LDA $A6B7, Y ; #A5E6
+    LDA L2_A6B7, Y ; #A5E6
     STA $021F ; #A5E9
 L2_A5EC:
     LDA #$38 ; #A5EC
@@ -6546,7 +6605,7 @@ L2_A613:
     TAY ; #A625
     LDA $0420, Y ; #A626
     BEQ L2_A631 ; #A629
-    LDA $A6B9, Y ; #A62B
+    LDA L2_A6B9, Y ; #A62B
     STA $0237 ; #A62E
 L2_A631:
     LDA #$38 ; #A631
@@ -6611,10 +6670,14 @@ L2_A67F:
     .db $90, $9C, %00000000, $B8        ; YES
     .db $F8, $7F, %00000000, $50        ;
 
+L2_A6B7:
     .db $40 ; #A6B7
     .db $A0 ; #A6B8
+
+L2_A6B9:
     .db $50 ; #A6B9
     .db $B0 ; #A6BA
+
     .db $BA ; #A6BB
     .db $33 ; #A6BC
     .db $92 ; #A6BD
@@ -13074,9 +13137,7 @@ L2_A67F:
     .db $00 ; #BFF7
     .db $08 ; #BFF8
     .db $89 ; #BFF9
-    .db $00 ; #BFFA
-    .db $C0 ; #BFFB
-    .db $E0 ; #BFFC
-    .db $FF ; #BFFD
-    .db $E0 ; #BFFE
-    .db $FF ; #BFFF
+
+    .word NMI
+    .word RESET
+    .word IRQ

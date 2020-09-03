@@ -796,7 +796,7 @@ L7_C588:
     JSR SetFirstPrgBank                 ; Bank 2.
     LDX #$02
     JSR L2_8000
-    JSR L2_8820                         ; Show title screen.
+    JSR FixTitleScreenColors            ; Show title screen.
     JSR EnableDisplay ; #C5C8
     JSR WaitNmiAndReadInputs ; #C5CB
     JSR LitTheScreen ; #C5CE
@@ -1241,7 +1241,7 @@ L7_C88E:
     JSR L7_C6B5 ; #C8A8
     LDA #$02 ; #C8AB
     JSR SetFirstPrgBank ; #C8AD
-    JSR $A410 ; #C8B0
+    JSR L2_A410 ; #C8B0
     LDA #$2C ; #C8B3
     STA <$4E ; #C8B5
     LDA #$01 ; #C8B7
@@ -9094,6 +9094,8 @@ L7_FABC:
     LDX <$10 ; #FAFA
     LDA #$06 ; #FAFC
     JMP SetFirstPrgBank ; #FAFE
+
+    ; Data
     .db $03 ; #FB01
     ORA <$11 ; #FB02
     .db $13 ; #FB04
