@@ -47,6 +47,28 @@ BUTTON_DOWN             = %00000100
 BUTTON_LEFT             = %00000010
 BUTTON_RIGHT            = %00000001
 
+BANK_0                  = $00
+BANK_1                  = $01
+BANK_2                  = $02
+BANK_3                  = $03
+BANK_4                  = $04
+BANK_5                  = $05
+BANK_6                  = $06
+BANK_7                  = $07
+
+ZONE_0                  = $00
+ZONE_A                  = $01
+ZONE_B                  = $02
+ZONE_C                  = $03
+ZONE_D                  = $04
+ZONE_E                  = $05
+ZONE_F                  = $06
+ZONE_G                  = $07
+ZONE_H                  = $08
+ZONE_I                  = $09
+ZONE_J                  = $0A
+
+SECOND                  = 60            ; Frames.
 
 Joypad                  = $14
 Joypad1Tmp              = $14
@@ -57,9 +79,13 @@ Joypad1Pressed          = $16           ; Byte
 Joypad2Pressed          = $17           ; Byte
 
 PalettesOutdated        = $18           ; Boolean: 0 / x
+VRamBuffer1Dirty        = $19           ; Boolean: 0 / x
 
 NextChrBank0            = $1A
 NextChrBank1            = $1B
+
+CurrentZone             = $37           ;TODO currently completed zone?
+BeatenZones             = $38           ; Word, bit mask.
 
 PalettesAnimType        = $3D
 PalettesAnimCounter     = $3E

@@ -21,7 +21,7 @@ L7_C00F:
     LDA #$00                            ; A = 0
     STA PPU_MASK_REG                    ; Disable display.
     STA OAM_ADDR_REG                    ; Use default Object Attribute Memory address.
-    LDA #$02
+    LDA #HIGH(OAM)
     STA OAM_DMA_REG                     ; Copy CPU page $02xx to internal PPU OAM memory.
 
     LDA <$1C                            ; A = <$1C
@@ -38,7 +38,7 @@ L7_C033:
     LDA #$00
     STA <$1D                            ; <$1D = 0
 L7_C040:
-    LDA <$19                            ; A = <$19
+    LDA <VRamBuffer1Dirty               ; A = VRamBuffer1Dirty
     BEQ L7_C047                         ; Branch if (A == 0)
     JSR L7_C115                         ;                                                   VRAM buffer #1.
 L7_C047:
@@ -1224,31 +1224,32 @@ L7_C879:
     RTS ; #C88D
 L7_C88E:
     LDA <$31 ; #C88E
-    STA <$37 ; #C890
-    CMP #$0A ; #C892
-    BEQ L7_C8C0 ; #C894
-    TAY ; #C896
-    LSR A ; #C897
-    LSR A ; #C898
-    LSR A ; #C899
-    AND #$01 ; #C89A
-    TAX ; #C89C
-    LDA <$38, X ; #C89D
-    ORA $D692, Y ; #C89F
-    STA <$38, X ; #C8A2
+    STA <CurrentZone
+    CMP #ZONE_J
+    BEQ ZoneJCompleted
+    TAY                                 ; Y = zone index.
+    LSR A
+    LSR A
+    LSR A
+    AND #$01
+    TAX                                 ; X = { Y >= 8 }, i.e. "Use MSB of levels bit mask".
+    LDA <BeatenZones, X
+    ORA BeatenZonesBits, Y
+    STA <BeatenZones, X
+
     LDA #$0D ; #C8A4
     STA <$31 ; #C8A6
     JSR L7_C6B5 ; #C8A8
-    LDA #$02 ; #C8AB
-    JSR SetFirstPrgBank ; #C8AD
-    JSR L2_A410 ; #C8B0
+    LDA #BANK_2
+    JSR SetFirstPrgBank
+    JSR ShowAndHoldZoneClearScreen
     LDA #$2C ; #C8B3
     STA <$4E ; #C8B5
     LDA #$01 ; #C8B7
     STA <$4F ; #C8B9
     LDA #$0C ; #C8BB
     JMP L7_F377 ; #C8BD
-L7_C8C0:
+ZoneJCompleted:
     LDA #$01 ; #C8C0
     STA <$4E ; #C8C2
     LDA #$00 ; #C8C4
@@ -1382,7 +1383,7 @@ L7_C98C:
     LDA $03A0, Y ; #C98C
     CMP #$26 ; #C98F
     BNE L7_C9A9 ; #C991
-    LDY $D69D, X ; #C993
+    LDY L7_D69D, X ; #C993
     LDA OAM, Y ; #C996
     CMP #$F8 ; #C999
     BNE L7_C9A9 ; #C99B
@@ -3161,6 +3162,8 @@ L7_D657:
     .db $00 ; #D68F
     .db $04 ; #D690
     .db $04 ; #D691
+
+BeatenZonesBits:
     .db $01 ; #D692
     .db $02 ; #D693
     .db $04 ; #D694
@@ -3172,6 +3175,8 @@ L7_D657:
     .db $01 ; #D69A
     .db $02 ; #D69B
     .db $04 ; #D69C
+
+L7_D69D:
     .db $04 ; #D69D
     .db $18 ; #D69E
     .db $16 ; #D69F
@@ -4683,24 +4688,23 @@ L7_E06B:
     RTS ; #E095
 
 
-; I guess both players have died and X (0 or 1) was the last one.
 L7_E096:
     JSR L7_C247 ; #E096
     LDX <$31 ; #E099
-    LDA $E287, X ; #E09B
+    LDA L7_E287, X ; #E09B
     STA <$32 ; #E09E
-    LDA $E296, X ; #E0A0
+    LDA L7_E296, X ; #E0A0
     STA <$33 ; #E0A3
-    LDA $E2A5, X ; #E0A5
+    LDA L7_E2A5, X ; #E0A5
     STA <$34 ; #E0A8
-    LDA $E2B4, X ; #E0AA
+    LDA L7_E2B4, X ; #E0AA
     STA <$35 ; #E0AD
-    LDA $E1F1, X ; #E0AF
+    LDA L7_E1F1, X ; #E0AF
     STA <$36 ; #E0B2
-    LDA $E200, X ; #E0B4
+    LDA L7_E200, X ; #E0B4
     STA <$22 ; #E0B7
     STA <$23 ; #E0B9
-    LDA $E20F, X ; #E0BB
+    LDA L7_E20F, X ; #E0BB
     STA <$FB ; #E0BE
     STA $0520 ; #E0C0
     STA $0521 ; #E0C3
@@ -4709,29 +4713,29 @@ L7_E096:
     STA <$FD ; #E0CA
     STA $0500 ; #E0CC
     STA $0501 ; #E0CF
-    LDY $E21E, X ; #E0D2
+    LDY L7_E21E, X ; #E0D2
     STY <$2C ; #E0D5
     INY ; #E0D7
     STY <$2E ; #E0D8
-    LDA $E22D, X ; #E0DA
-    STA <NextChrBank0 ; #E0DD
-    LDA $E23C, X ; #E0DF
-    STA <NextChrBank1 ; #E0E2
-    LDA $E25A, X ; #E0E4
+    LDA ZonesChr0Array, X
+    STA <NextChrBank0
+    LDA ZonesChr1Array, X
+    STA <NextChrBank1
+    LDA ZonesMusicArray, X
     LDY <$B8 ; #E0E7
     BNE L7_E0EE ; #E0E9
     JSR L7_F377 ; #E0EB
 L7_E0EE:
-    LDA $E278, X ; #E0EE
-    STA <PalettesAnimType ; #E0F1
-    LDA $E24B, X ; #E0F3
-    STX <$02 ; #E0F6
-    JSR SetBackgroundPalette ; #E0F8
-    LDX <$02 ; #E0FB
-    LDA $E269, X ; #E0FD
+    LDA ZonesPalAnimationArray, X
+    STA <PalettesAnimType
+    LDA ZonesBackgroundPalArray, X
+    STX <$02
+    JSR SetBackgroundPalette
+    LDX <$02
+    LDA ZonesSpritesPalArray, X
     JSR SetSpritesPalette ; #E100
     JSR L7_E179 ; #E103
-    JSR L7_E754 ; #E106
+    JSR MapScreenHideBeatenZones ; #E106
     JSR EnableDisplay ; #E109
     JSR WaitNmiAndReadInputs ; #E10C
     LDA #$00 ; #E10F
@@ -4747,11 +4751,11 @@ L7_E11D:
     BEQ L7_E13E ; #E121
     LDA #$80 ; #E123
     STA $04D0, X ; #E125
-    LDA $E1ED, X ; #E128
+    LDA L7_E1ED, X ; #E128
     STA $0400, X ; #E12B
     LDA #$B4 ; #E12E
     STA $0510, X ; #E130
-    LDA $E1EF, X ; #E133
+    LDA L7_E1EF, X ; #E133
     STA $04F0, X ; #E136
     LDA #$00 ; #E139
     STA $0420, X ; #E13B
@@ -4765,7 +4769,7 @@ L7_E143:
     STA $04FE, X ; #E148
     ORA #$10 ; #E14B
     STA $040E, X ; #E14D
-    LDA $E1EB, X ; #E150
+    LDA L7_E1EB, X ; #E150
     STA $051E, X ; #E153
     LDA #$22 ; #E156
     STA $042E, X ; #E158
@@ -4843,19 +4847,21 @@ L7_E1CC:
 L7_E1EA:
     RTS ; #E1EA
 
-
+L7_E1EB:
     .db $38 ; #E1EB
     .db $B8 ; #E1EC
 
+L7_E1ED:
     .db $D0 ; #E1ED
     .db $90 ; #E1EE
 
+L7_E1EF:
     .db $18 ; #E1EF
     .db $E8 ; #E1F0
 
+L7_E1F1:
     .db $00 ; #E1F1
     .db $01 ; #E1F2
-
     .db $01 ; #E1F3
     .db $03 ; #E1F4
     .db $02 ; #E1F5
@@ -4870,9 +4876,9 @@ L7_E1EA:
     .db $02 ; #E1FE
     .db $02 ; #E1FF
 
+L7_E200:
     .db $23 ; #E200
     .db $15 ; #E201
-
     .db $10 ; #E202
     .db $10 ; #E203
     .db $18 ; #E204
@@ -4887,9 +4893,9 @@ L7_E1EA:
     .db $00 ; #E20D
     .db $00 ; #E20E
 
+L7_E20F:
     .db $05 ; #E20F
     .db $07 ; #E210
-
     .db $02 ; #E211
     .db $02 ; #E212
     .db $03 ; #E213
@@ -4904,9 +4910,9 @@ L7_E1EA:
     .db $00 ; #E21C
     .db $00 ; #E21D
 
+L7_E21E:
     .db $06 ; #E21E
     .db $02 ; #E21F
-
     .db $07 ; #E220
     .db $07 ; #E221
     .db $07 ; #E222
@@ -4921,176 +4927,93 @@ L7_E1EA:
     .db $00 ; #E22B
     .db $00 ; #E22C
 
-    .db $80 ; #E22D
-    .db $81 ; #E22E
+ZonesChr0Array:
+    .db $80, $81, $80, $83, $84, $86, $85, $88, $81, $86, $87, $8C, $8C, $80, $9D
 
-    .db $80 ; #E22F
-    .db $83 ; #E230
-    .db $84 ; #E231
-    .db $86 ; #E232
-    .db $85 ; #E233
-    .db $88 ; #E234
-    .db $81 ; #E235
-    .db $86 ; #E236
-    .db $87 ; #E237
-    .db $8C ; #E238
-    .db $8C ; #E239
-    .db $80 ; #E23A
-    .db $9D ; #E23B
+ZonesChr1Array:
+    .db $90, $92, $93, $94, $95, $96, $97, $98, $99, $9A, $9B, $9E, $9E, $9D, $9D
 
-    .db $90 ; #E23C
-    .db $92 ; #E23D
+ZonesBackgroundPalArray:
+    .db $00, $02, $03, $05, $06, $08, $0B, $0C, $11, $0E, $10, $16, $16, $18, $18
 
-    .db $93 ; #E23E
-    .db $94 ; #E23F
-    .db $95 ; #E240
-    .db $96 ; #E241
-    .db $97 ; #E242
-    .db $98 ; #E243
-    .db $99 ; #E244
-    .db $9A ; #E245
-    .db $9B ; #E246
-    .db $9E ; #E247
-    .db $9E ; #E248
-    .db $9D ; #E249
-    .db $9D ; #E24A
+ZonesMusicArray:
+    .db $00, $05, $01, $05, $02, $05, $06, $03, $06, $06, $04, $09, $09, $F0, $0B
 
-    .db $00 ; #E24B
-    .db $02 ; #E24C
+ZonesSpritesPalArray:
+    .db $00, $01, $00, $03, $04, $06, $05, $08, $0C, $06, $07, $10, $10, $00, $12
 
-    .db $03 ; #E24D
-    .db $05 ; #E24E
-    .db $06 ; #E24F
-    .db $08 ; #E250
-    .db $0B ; #E251
-    .db $0C ; #E252
-    .db $11 ; #E253
-    .db $0E ; #E254
-    .db $10 ; #E255
-    .db $16 ; #E256
-    .db $16 ; #E257
-    .db $18 ; #E258
-    .db $18 ; #E259
+ZonesPalAnimationArray:
+    .db $00, $00, $00, $00, $00, $00, $00, $00, $97, $93, $8E, $00, $00, $00, $00
 
-    .db $00 ; #E25A
-    .db $05 ; #E25B
+L7_E287:
+    .db LOW(L7_E2C3)
+    .db LOW(L7_E2ED)
+    .db LOW(L7_E305)
+    .db LOW(L7_E31D)
+    .db LOW(L7_E335)
+    .db LOW(L7_E355)
+    .db LOW(L7_E36D)
+    .db LOW(L7_E395)
+    .db LOW(L7_E3B5)
+    .db LOW(L7_E3DD)
+    .db LOW(L7_E3F5)
+    .db LOW(L7_E415)
+    .db LOW(L7_E415)
+    .db LOW(L7_E41B)
+    .db LOW(L7_E41B)
 
-    .db $01 ; #E25C
-    .db $05 ; #E25D
-    .db $02 ; #E25E
-    .db $05 ; #E25F
-    .db $06 ; #E260
-    .db $03 ; #E261
-    .db $06 ; #E262
-    .db $06 ; #E263
-    .db $04 ; #E264
-    .db $09 ; #E265
-    .db $09 ; #E266
-    .db $F0 ; #E267
-    .db $0B ; #E268
+L7_E296:
+    .db HIGH(L7_E2C3)
+    .db HIGH(L7_E2ED)
+    .db HIGH(L7_E305)
+    .db HIGH(L7_E31D)
+    .db HIGH(L7_E335)
+    .db HIGH(L7_E355)
+    .db HIGH(L7_E36D)
+    .db HIGH(L7_E395)
+    .db HIGH(L7_E3B5)
+    .db HIGH(L7_E3DD)
+    .db HIGH(L7_E3F5)
+    .db HIGH(L7_E415)
+    .db HIGH(L7_E415)
+    .db HIGH(L7_E41B)
+    .db HIGH(L7_E41B)
 
-    .db $00 ; #E269
-    .db $01 ; #E26A
+L7_E2A5:
+    .db LOW(L7_E41C)
+    .db LOW(L7_E446)
+    .db LOW(L7_E45E)
+    .db LOW(L7_E476)
+    .db LOW(L7_E48E)
+    .db LOW(L7_E4AE)
+    .db LOW(L7_E4C6)
+    .db LOW(L7_E4EE)
+    .db LOW(L7_E50E)
+    .db LOW(L7_E536)
+    .db LOW(L7_E54E)
+    .db LOW(L7_E56E)
+    .db LOW(L7_E56E)
+    .db LOW(L7_E574)
+    .db LOW(L7_E574)
 
-    .db $00 ; #E26B
-    .db $03 ; #E26C
-    .db $04 ; #E26D
-    .db $06 ; #E26E
-    .db $05 ; #E26F
-    .db $08 ; #E270
-    .db $0C ; #E271
-    .db $06 ; #E272
-    .db $07 ; #E273
-    .db $10 ; #E274
-    .db $10 ; #E275
-    .db $00 ; #E276
-    .db $12 ; #E277
+L7_E2B4:
+    .db HIGH(L7_E41C)
+    .db HIGH(L7_E446)
+    .db HIGH(L7_E45E)
+    .db HIGH(L7_E476)
+    .db HIGH(L7_E48E)
+    .db HIGH(L7_E4AE)
+    .db HIGH(L7_E4C6)
+    .db HIGH(L7_E4EE)
+    .db HIGH(L7_E50E)
+    .db HIGH(L7_E536)
+    .db HIGH(L7_E54E)
+    .db HIGH(L7_E56E)
+    .db HIGH(L7_E56E)
+    .db HIGH(L7_E574)
+    .db HIGH(L7_E574)
 
-    .db $00 ; #E278
-    .db $00 ; #E279
-
-    .db $00 ; #E27A
-    .db $00 ; #E27B
-    .db $00 ; #E27C
-    .db $00 ; #E27D
-    .db $00 ; #E27E
-    .db $00 ; #E27F
-    .db $97 ; #E280
-    .db $93 ; #E281
-    .db $8E ; #E282
-    .db $00 ; #E283
-    .db $00 ; #E284
-    .db $00 ; #E285
-    .db $00 ; #E286
-
-    .db $C3 ; #E287
-    .db $ED ; #E288
-
-    .db $05 ; #E289
-    .db $1D ; #E28A
-    .db $35 ; #E28B
-    .db $55 ; #E28C
-    .db $6D ; #E28D
-    .db $95 ; #E28E
-    .db $B5 ; #E28F
-    .db $DD ; #E290
-    .db $F5 ; #E291
-    .db $15 ; #E292
-    .db $15 ; #E293
-    .db $1B ; #E294
-    .db $1B ; #E295
-
-    .db $E2 ; #E296
-    .db $E2 ; #E297
-
-    .db $E3 ; #E298
-    .db $E3 ; #E299
-    .db $E3 ; #E29A
-    .db $E3 ; #E29B
-    .db $E3 ; #E29C
-    .db $E3 ; #E29D
-    .db $E3 ; #E29E
-    .db $E3 ; #E29F
-    .db $E3 ; #E2A0
-    .db $E4 ; #E2A1
-    .db $E4 ; #E2A2
-    .db $E4 ; #E2A3
-    .db $E4 ; #E2A4
-
-    .db $1C ; #E2A5
-    .db $46 ; #E2A6
-
-    .db $5E ; #E2A7
-    .db $76 ; #E2A8
-    .db $8E ; #E2A9
-    .db $AE ; #E2AA
-    .db $C6 ; #E2AB
-    .db $EE ; #E2AC
-    .db $0E ; #E2AD
-    .db $36 ; #E2AE
-    .db $4E ; #E2AF
-    .db $6E ; #E2B0
-    .db $6E ; #E2B1
-    .db $74 ; #E2B2
-    .db $74 ; #E2B3
-
-    .db $E4 ; #E2B4
-    .db $E4 ; #E2B5
-
-    .db $E4 ; #E2B6
-    .db $E4 ; #E2B7
-    .db $E4 ; #E2B8
-    .db $E4 ; #E2B9
-    .db $E4 ; #E2BA
-    .db $E4 ; #E2BB
-    .db $E5 ; #E2BC
-    .db $E5 ; #E2BD
-    .db $E5 ; #E2BE
-    .db $E5 ; #E2BF
-    .db $E5 ; #E2C0
-    .db $E5 ; #E2C1
-    .db $E5 ; #E2C2
-
+L7_E2C3:
     .db $16 ; #E2C3
     .db $17 ; #E2C4
     .db $18 ; #E2C5
@@ -5133,6 +5056,8 @@ L7_E1EA:
     .db $05 ; #E2EA
     .db $06 ; #E2EB
     .db $00 ; #E2EC
+
+L7_E2ED:
     .db $3D ; #E2ED
     .db $00 ; #E2EE
     .db $00 ; #E2EF
@@ -5157,6 +5082,8 @@ L7_E1EA:
     .db $34 ; #E302
     .db $35 ; #E303
     .db $36 ; #E304
+
+L7_E305:
     .db $2B ; #E305
     .db $2C ; #E306
     .db $2D ; #E307
@@ -5181,6 +5108,8 @@ L7_E1EA:
     .db $00 ; #E31A
     .db $00 ; #E31B
     .db $33 ; #E31C
+
+L7_E31D:
     .db $63 ; #E31D
     .db $64 ; #E31E
     .db $65 ; #E31F
@@ -5205,6 +5134,8 @@ L7_E1EA:
     .db $00 ; #E332
     .db $00 ; #E333
     .db $00 ; #E334
+
+L7_E335:
     .db $57 ; #E335
     .db $00 ; #E336
     .db $00 ; #E337
@@ -5237,6 +5168,8 @@ L7_E1EA:
     .db $43 ; #E352
     .db $44 ; #E353
     .db $45 ; #E354
+
+L7_E355:
     .db $27 ; #E355
     .db $28 ; #E356
     .db $13 ; #E357
@@ -5261,6 +5194,8 @@ L7_E1EA:
     .db $1C ; #E36A
     .db $1D ; #E36B
     .db $1E ; #E36C
+
+L7_E36D:
     .db $00 ; #E36D
     .db $8F ; #E36E
     .db $00 ; #E36F
@@ -5301,6 +5236,8 @@ L7_E1EA:
     .db $89 ; #E392
     .db $8A ; #E393
     .db $8B ; #E394
+
+L7_E395:
     .db $00 ; #E395
     .db $00 ; #E396
     .db $00 ; #E397
@@ -5333,6 +5270,8 @@ L7_E1EA:
     .db $70 ; #E3B2
     .db $71 ; #E3B3
     .db $72 ; #E3B4
+
+L7_E3B5:
     .db $0C ; #E3B5
     .db $0D ; #E3B6
     .db $0E ; #E3B7
@@ -5373,6 +5312,8 @@ L7_E1EA:
     .db $00 ; #E3DA
     .db $00 ; #E3DB
     .db $00 ; #E3DC
+
+L7_E3DD:
     .db $00 ; #E3DD
     .db $00 ; #E3DE
     .db $00 ; #E3DF
@@ -5397,6 +5338,8 @@ L7_E1EA:
     .db $95 ; #E3F2
     .db $96 ; #E3F3
     .db $97 ; #E3F4
+
+L7_E3F5:
     .db $00 ; #E3F5
     .db $00 ; #E3F6
     .db $00 ; #E3F7
@@ -5429,13 +5372,20 @@ L7_E1EA:
     .db $A7 ; #E412
     .db $A8 ; #E413
     .db $A9 ; #E414
+
+L7_E415:
     .db $C0 ; #E415
     .db $BF ; #E416
     .db $BE ; #E417
     .db $BD ; #E418
     .db $BC ; #E419
     .db $BB ; #E41A
+
+L7_E41B:
     .db $59 ; #E41B
+
+
+L7_E41C:
     .db $C0 ; #E41C
     .db $C0 ; #E41D
     .db $C0 ; #E41E
@@ -5478,6 +5428,8 @@ L7_E1EA:
     .db $C0 ; #E443
     .db $40 ; #E444
     .db $00 ; #E445
+
+L7_E446:
     .db $80 ; #E446
     .db $00 ; #E447
     .db $00 ; #E448
@@ -5502,6 +5454,8 @@ L7_E1EA:
     .db $C0 ; #E45B
     .db $C0 ; #E45C
     .db $40 ; #E45D
+
+L7_E45E:
     .db $C0 ; #E45E
     .db $C0 ; #E45F
     .db $C0 ; #E460
@@ -5526,6 +5480,8 @@ L7_E1EA:
     .db $00 ; #E473
     .db $00 ; #E474
     .db $80 ; #E475
+
+L7_E476:
     .db $C0 ; #E476
     .db $C0 ; #E477
     .db $C0 ; #E478
@@ -5550,6 +5506,8 @@ L7_E1EA:
     .db $00 ; #E48B
     .db $00 ; #E48C
     .db $00 ; #E48D
+
+L7_E48E:
     .db $80 ; #E48E
     .db $00 ; #E48F
     .db $00 ; #E490
@@ -5582,6 +5540,8 @@ L7_E1EA:
     .db $C0 ; #E4AB
     .db $C0 ; #E4AC
     .db $C8 ; #E4AD
+
+L7_E4AE:
     .db $C0 ; #E4AE
     .db $C0 ; #E4AF
     .db $C0 ; #E4B0
@@ -5606,6 +5566,8 @@ L7_E1EA:
     .db $C0 ; #E4C3
     .db $C0 ; #E4C4
     .db $CB ; #E4C5
+
+L7_E4C6:
     .db $00 ; #E4C6
     .db $99 ; #E4C7
     .db $00 ; #E4C8
@@ -5646,6 +5608,8 @@ L7_E1EA:
     .db $C0 ; #E4EB
     .db $C0 ; #E4EC
     .db $CE ; #E4ED
+
+L7_E4EE:
     .db $00 ; #E4EE
     .db $00 ; #E4EF
     .db $00 ; #E4F0
@@ -5678,6 +5642,8 @@ L7_E1EA:
     .db $C0 ; #E50B
     .db $C0 ; #E50C
     .db $CF ; #E50D
+
+L7_E50E:
     .db $C0 ; #E50E
     .db $C0 ; #E50F
     .db $C0 ; #E510
@@ -5718,6 +5684,8 @@ L7_E1EA:
     .db $00 ; #E533
     .db $00 ; #E534
     .db $00 ; #E535
+
+L7_E536:
     .db $00 ; #E536
     .db $00 ; #E537
     .db $00 ; #E538
@@ -5742,6 +5710,8 @@ L7_E1EA:
     .db $C0 ; #E54B
     .db $C0 ; #E54C
     .db $D2 ; #E54D
+
+L7_E54E:
     .db $00 ; #E54E
     .db $00 ; #E54F
     .db $00 ; #E550
@@ -5774,12 +5744,16 @@ L7_E1EA:
     .db $C0 ; #E56B
     .db $C0 ; #E56C
     .db $D5 ; #E56D
+
+L7_E56E:
     .db $00 ; #E56E
     .db $00 ; #E56F
     .db $00 ; #E570
     .db $00 ; #E571
     .db $00 ; #E572
     .db $00 ; #E573
+
+L7_E574:
     .db $00 ; #E574
 
 
@@ -5930,87 +5904,87 @@ L7_E656:
     .db $18, $18, $2C, $18, $18, $18, $54, $18, $18, $18, $38, $38, $18, $48, $38, $38, $18, $18, $18, $18, $D8, $18, $34, $18
 
 
-L7_E754:
+MapScreenHideBeatenZones:
     LDA <$31                            ; A = <$31
     CMP #$0B
-    BEQ L7_E75F
+    BEQ MapScreen1HideBeatenZones
     CMP #$0C
     BEQ L7_E76D
-    RTS                                 ; Return is it's not #$0B or #$0C.
-L7_E75F:                                ; #$0B
+    RTS                                 ; Return if it's not #$0B or #$0C.
+MapScreen1HideBeatenZones:
     LDA #$00
     STA <$00                            ; <$00 = #0
-    LDA <$38
+    LDA <(BeatenZones + 0)
     STA <$01                            ; <$01 = <$38
     LDA #$07
     STA <$02                            ; <$02 = #7
-    BNE L7_E779                         ; Jump unconditionally.
-L7_E76D:                                ; #$0C
+    BNE MapScreenMaybeMarkZoneBeaten    ; Jump unconditionally.
+L7_E76D:
     LDA #$08
     STA <$00                            ; <$00 = #8
     LDA #$02
     STA <$02                            ; <$02 = #2, assignment order is fucked up.
-    LDA <$39
+    LDA <(BeatenZones + 1)
     STA <$01                            ; <$01 = <$39
 
-L7_E779:                                ; Temp variables are initialized.
+MapScreenMaybeMarkZoneBeaten:           ; Temp variables are initialized.
     LDA <$01                            ; Bit mask with the length of (<$02 + 1), 8 or 3.
-    AND #$01 ; #E77B
-    BEQ L7_E7CC ; #E77D
+    AND #$01
+    BEQ MapScreenSkipZoneBeaten
     LDA <$00                            ; A is either 0 or 8.
     ASL A
-    TAY                                 ; Y = (A <<= 1)
+    TAY                                 ; Y = (A <<= 1), because we read words, not bytes.
 
-    LDA L7_E7D5, Y ; #E783
-    STA PPU_ADDR_REG ; #E786
-    LDA $E7D6, Y ; #E789
-    STA PPU_ADDR_REG ; #E78C
-    LDA #$26 ; #E78F
-    STA PPU_DATA_REG ; #E791
-    LDA #$27 ; #E794
-    STA PPU_DATA_REG ; #E796
+    LDA (MapScreen1ZonePos + 0), Y
+    STA PPU_ADDR_REG
+    LDA (MapScreen1ZonePos + 1), Y
+    STA PPU_ADDR_REG
+    LDA #$26
+    STA PPU_DATA_REG
+    LDA #$27
+    STA PPU_DATA_REG                    ; Top of "RR".
 
-    LDA L7_E7D5, Y ; #E799
+    LDA (MapScreen1ZonePos + 0), Y
     STA PPU_ADDR_REG ; #E79C
-    LDA $E7D6, Y ; #E79F
-    ORA #$20 ; #E7A2
-    STA PPU_ADDR_REG ; #E7A4
-    LDA #$36 ; #E7A7
-    STA PPU_DATA_REG ; #E7A9
-    LDA #$37 ; #E7AC
-    STA PPU_DATA_REG ; #E7AE
+    LDA (MapScreen1ZonePos + 1), Y
+    ORA #$20                            ; Go to the next line. Bit was 0.
+    STA PPU_ADDR_REG
+    LDA #$36
+    STA PPU_DATA_REG
+    LDA #$37
+    STA PPU_DATA_REG                    ; Bottom of "RR".
 
-    LDA L7_E7EB, Y ; #E7B1
-    STA PPU_ADDR_REG ; #E7B4
-    LDA $E7EC, Y ; #E7B7
-    STA PPU_ADDR_REG ; #E7BA
-    AND #$3F                            ; Tile offset within two screen lines, cause they are paired.
-    TAX ; #E7BF
+    LDA (L7_E7EB + 0), Y
+    STA PPU_ADDR_REG
+    LDA (L7_E7EB + 1), Y
+    STA PPU_ADDR_REG
+    AND #$3F                            ; Byte within palettes. Overall it's 4x16 bytes.
+    TAX
     LDA $0780, X                        ; Get it from memory, of course.
     AND L7_E801, Y
     ORA (L7_E801 + 1), Y
-    STA PPU_DATA_REG ; #E7C9
-L7_E7CC:
-    INC <$00 ; #E7CC
-    LSR <$01 ; #E7CE
-    DEC <$02 ; #E7D0
-    BPL L7_E779 ; #E7D2
-    RTS ; #E7D4
+    STA PPU_DATA_REG
+MapScreenSkipZoneBeaten:
+    INC <$00
+    LSR <$01
+    DEC <$02
+    BPL MapScreenMaybeMarkZoneBeaten
+    RTS
 
 ; Bunch of VRAM pointers.
-L7_E7D5:
-    .db $21, $5A
-    .db $22, $5A
-    .db $21, $54
-    .db $23, $14
-    .db $22, $10
-    .db $21, $4A
-    .db $22, $0A
-    .db $22, $44
-L7_E7E6:
-    .db $22, $0A
-    .db $22, $12
-    .db $22, $1A
+MapScreen1ZonePos:
+    .db $21, $5A                        ; Zone 0.
+    .db $22, $5A                        ; Zone A.
+    .db $21, $54                        ; Zone B.
+    .db $23, $14                        ; Zone C.
+    .db $22, $10                        ; Zone D.
+    .db $21, $4A                        ; Zone E.
+    .db $22, $0A                        ; Zone F.
+    .db $22, $44                        ; Zone G.
+MapScreen2ZonePos:
+    .db $22, $0A                        ; Zone H.
+    .db $22, $12                        ; Zone I.
+    .db $22, $1A                        ; Zone J.
 
 L7_E7EB:
     .db $23, $D6
@@ -6622,11 +6596,11 @@ L7_EB46:
     STA <$05 ; #EB67
     LDA $0520, X ; #EB69
     STA <$08 ; #EB6C
-    LDA $EBFA, Y ; #EB6E
+    LDA L7_EBFA, Y ; #EB6E
     BMI L7_EB89 ; #EB71
     LDA $0510, X ; #EB73
     CLC ; #EB76
-    ADC $EBFA, Y ; #EB77
+    ADC L7_EBFA, Y ; #EB77
     BCS L7_EB80 ; #EB7A
     CMP #$F0 ; #EB7C
     BCC L7_EB84 ; #EB7E
@@ -6637,7 +6611,7 @@ L7_EB84:
     STA <$07 ; #EB84
     JMP L7_EBA0 ; #EB86
 L7_EB89:
-    LDA $EBFA, Y ; #EB89
+    LDA L7_EBFA, Y ; #EB89
     EOR #$FF ; #EB8C
     STA <$09 ; #EB8E
     INC <$09 ; #EB90
@@ -6706,6 +6680,8 @@ L7_EBF3:
     LSR A ; #EBF7
     LSR A ; #EBF8
     RTS ; #EBF9
+
+L7_EBFA:
     .db $F5 ; #EBFA
     .db $00 ; #EBFB
     .db $0B ; #EBFC
@@ -7108,14 +7084,14 @@ L7_EDCB:
     STA <$5A, X ; #EDCD
     LDA $04F0, X ; #EDCF
     CLC ; #EDD2
-    ADC $EECB, Y ; #EDD3
+    ADC L7_EECB, Y ; #EDD3
     AND #$0F ; #EDD6
-    ORA $EECD, Y ; #EDD8
+    ORA L7_EECD, Y ; #EDD8
     STA <$00 ; #EDDB
     TAY ; #EDDD
     LDA $0510, X ; #EDDE
     CLC ; #EDE1
-    ADC $EEAB, Y ; #EDE2
+    ADC L7_EEAB, Y ; #EDE2
     STA $0510, X ; #EDE5
     CMP #$F0 ; #EDE8
     BCC L7_EDF4 ; #EDEA
@@ -7213,7 +7189,7 @@ L7_EE6D:
 L7_EE92:
     LDA $0510, X ; #EE92
     SEC ; #EE95
-    SBC $EEAB, Y ; #EE96
+    SBC L7_EEAB, Y ; #EE96
     BCS L7_EE9E ; #EE99
     SBC #$0F ; #EE9B
     CLC ; #EE9D
@@ -7226,6 +7202,7 @@ L7_EEA9:
     SEC ; #EEA9
     RTS ; #EEAA
 
+L7_EEAB:
     .db $00 ; #EEAB
     .db $01 ; #EEAC
     .db $02 ; #EEAD
@@ -7259,9 +7236,11 @@ L7_EEA9:
     .db $01 ; #EEC9
     .db $00 ; #EECA
 
+L7_EECB:
     .db $F9 ; #EECB
     .db $07 ; #EECC
 
+L7_EECD:
     .db $00 ; #EECD
     .db $10 ; #EECE
 

@@ -352,6 +352,7 @@ L2_8900:
     PHA                                 ; Something from player 1.
     LDA <$5F
     PHA                                 ; Something from player 2.
+
     LDX #$03
 L2_8908:
     LDA $04D0, X ; #8908
@@ -372,7 +373,7 @@ L2_8908:
     AND #$01 ; #8931
     BEQ L2_8942 ; #8933
     BNE L2_8967 ; #8935
-L2_8937:
+L2_8937:                                ; Two players.
     TXA ; #8937
     AND #$01 ; #8938
     TAY ; #893A
@@ -400,6 +401,7 @@ L2_8967:
 L2_896F:
     DEX ; #896F
     BPL L2_8908 ; #8970
+
     LDA $0340 ; #8972
     CMP #$01 ; #8975
     BEQ L2_8983 ; #8977
@@ -430,7 +432,7 @@ L2_899C:
     STX <$18 ; #89AB
     LDY #$27 ; #89AD
 L2_89AF:
-    LDA $0200, Y ; #89AF
+    LDA OAM, Y
     STA $0395, Y ; #89B2
     DEY ; #89B5
     BPL L2_89AF ; #89B6
@@ -443,17 +445,17 @@ L2_89C2:
     LDA #$04 ; #89C2
     STA <$97 ; #89C4
     JSR L7_F392 ; #89C6
-    LDA <$14 ; #89C9
+    LDA <Joypad1Tapped
     CMP #(BUTTON_A | BUTTON_B)
     BEQ L2_89D7 ; #89CD
-    LDA <$14 ; #89CF
+    LDA <Joypad1Tapped
     AND #BUTTON_SELECT
     BEQ L2_89C2 ; #89D3
     BNE L2_89DA ; #89D5
 L2_89D7:
     JMP L2_A597                         ; Pressing A and B in SELECT menu will trigger a special menu.
 L2_89DA:
-    LDX #$03 ; #89DA
+    LDX #$03                            ; SELECT pressed.
 L2_89DC:
     LDA $0360, X ; #89DC
     STA $04D0, X ; #89DF
@@ -471,6 +473,7 @@ L2_89DC:
     STA $0430, X ; #8A02
     DEX ; #8A05
     BPL L2_89DC ; #8A06
+
     LDX #$00 ; #8A08
 L2_8A0A:
     LDA $0378, X ; #8A0A
@@ -478,6 +481,7 @@ L2_8A0A:
     INX ; #8A10
     CPX #$0C ; #8A11
     BNE L2_8A0A ; #8A13
+
     LDX #$0F ; #8A15
 L2_8A17:
     LDA $0385, X ; #8A17
@@ -485,12 +489,14 @@ L2_8A17:
     DEX ; #8A1D
     BPL L2_8A17 ; #8A1E
     STX <$18 ; #8A20
+
     LDY #$27 ; #8A22
 L2_8A24:
     LDA $0395, Y ; #8A24
-    STA $0200, Y ; #8A27
+    STA OAM, Y ; #8A27
     DEY ; #8A2A
     BPL L2_8A24 ; #8A2B
+
     LDA $0384 ; #8A2D
     ORA #$80 ; #8A30
     STA <$1A ; #8A32
@@ -6281,29 +6287,29 @@ L2_A400
     .db $00 ; #A40E
     .db $08 ; #A40F
 
-L2_A410:
+ShowAndHoldZoneClearScreen:
     LDX #$00 ; #A410
     JSR L2_A46B ; #A412
-    LDX <$37 ; #A415
-    LDA L2_A545, X ; #A417
-    STA $0368 ; #A41A
-    LDA #$FF ; #A41D
-    STA <$19 ; #A41F
-    LDA #$3C ; #A421
+    LDX <CurrentZone                    ; This is huge, zone index!
+    LDA ZoneLetters, X                  ; Load zone letter.
+    STA (VRamBufferBase + 8)            ; See L2_A507 to know why 8.
+    LDA #$FF
+    STA <VRamBuffer1Dirty               ; Like your mom.
+    LDA #SECOND                         ; A second.
     JSR L2_A4DE ; #A423
     LDX #$01 ; #A426
-    JSR L2_A46B ; #A428
-    STA <$19 ; #A42B
+    JSR L2_A46B                         ; Get ready.
+    STA <VRamBuffer1Dirty ; #A42B
     LDA $0340 ; #A42D
     STA $0420 ; #A430
     LDA $0341 ; #A433
     STA $0421 ; #A436
-    LDA #$3C ; #A439
+    LDA #SECOND                         ; Another second.
     JSR L2_A4DE ; #A43B
     LDX #$02 ; #A43E
-    JSR L2_A46B ; #A440
-    STA <$19 ; #A443
-    JMP L2_A487 ; #A445
+    JSR L2_A46B                         ; Go!
+    STA <VRamBuffer1Dirty
+    JMP L2_A487
 
 
 HoldGameOverScreen:
@@ -6391,6 +6397,7 @@ L2_A489:
     DEX ; #A4DA
     BPL L2_A489 ; #A4DB
     RTS ; #A4DD
+
 L2_A4DE:
     PHA ; #A4DE
     LDA #$00 ; #A4DF
@@ -6455,7 +6462,7 @@ L2_A536:
     .db $FF ; #A544
 
 ; Letters for zones.
-L2_A545:
+ZoneLetters:
     .db $80                             ; 0
     .db $8A                             ; A
     .db $8B                             ; B
@@ -6529,7 +6536,7 @@ ContinueCursorSprite:
     .db $57, $AC, %00000011, $50
 
 
-L2_A597:
+L2_A597:                                ; "Give up?" menu.
     LDX #$00 ; #A597
     LDA #$F8 ; #A599
 L2_A59B:
@@ -6540,7 +6547,7 @@ L2_A59B:
     INX
     BNE L2_A59B                         ; Move all sprites outside the screen.
 
-    STX $04D2 ; #A5A4
+    STX $04D2                           ; X == 0
     STX $04D3 ; #A5A7
     LDA #$80 ; #A5AA
     STA $04D0 ; #A5AC
@@ -6564,44 +6571,45 @@ L2_A5B2:
 
     JSR L7_F392
 L2_A5D7:
-    LDA <$14 ; #A5D7
-    AND #$80 ; #A5D9
+    LDA <Joypad1Tapped
+    AND #BUTTON_A
     BNE L2_A5F6 ; #A5DB
-    LDA <$14 ; #A5DD
-    AND #$03 ; #A5DF
+    LDA <Joypad1Tapped
+    AND #(BUTTON_LEFT | BUTTON_RIGHT)
     BEQ L2_A5EC ; #A5E1
-    AND #$01 ; #A5E3
-    TAY ; #A5E5
-    LDA L2_A6B7, Y ; #A5E6
+    AND #BUTTON_RIGHT
+    TAY
+    LDA GiveUpCursorPositions, Y
     STA $021F ; #A5E9
 L2_A5EC:
-    LDA #$38 ; #A5EC
-    STA <$97 ; #A5EE
+    LDA #$38                            ; 14 sprites.
+    STA <OamUsedSize
     JSR L7_F392 ; #A5F0
     JMP L2_A5D7 ; #A5F3
+
 L2_A5F6:
     LDA #$38 ; #A5F6
-    STA <$97 ; #A5F8
+    STA <OamUsedSize
     JSR L7_F392 ; #A5FA
     LDA $021F ; #A5FD
-    CMP #$40 ; #A600
-    BEQ L2_A67C ; #A602
+    CMP #$40                            ; #$40 means "NO".
+    BEQ L2_A67C                         ; Just return if no.
     LDA #$44 ; #A604
     STA $0234 ; #A606
     LDA $0420 ; #A609
     BNE L2_A613 ; #A60C
     LDA #$B0 ; #A60E
-    STA $0237 ; #A610
+    STA $0237 ; #A610                   Some sprites manipulations. Will decipher them later.
 L2_A613:
-    LDA <$14 ; #A613
-    CMP #$80 ; #A615
+    LDA <Joypad1Tapped
+    CMP #BUTTON_A
     BEQ L2_A642 ; #A617
-    AND #$40 ; #A619
+    AND #BUTTON_B
     BNE L2_A63B ; #A61B
-    LDA <$14 ; #A61D
-    AND #$03 ; #A61F
+    LDA <Joypad1Tapped
+    AND #(BUTTON_LEFT | BUTTON_RIGHT)
     BEQ L2_A631 ; #A621
-    AND #$01 ; #A623
+    AND #BUTTON_RIGHT
     TAY ; #A625
     LDA $0420, Y ; #A626
     BEQ L2_A631 ; #A629
@@ -6609,7 +6617,7 @@ L2_A613:
     STA $0237 ; #A62E
 L2_A631:
     LDA #$38 ; #A631
-    STA <$97 ; #A633
+    STA <OamUsedSize
     JSR L7_F392 ; #A635
     JMP L2_A613 ; #A638
 L2_A63B:
@@ -6625,9 +6633,9 @@ L2_A642:
 L2_A64C:
     LDA <$54, X ; #A64C
     CMP #$0A ; #A64E
-    BEQ L2_A67C ; #A650
+    BEQ L2_A67C                         ; Return.
     CMP #$0C ; #A652
-    BEQ L2_A67C ; #A654
+    BEQ L2_A67C                         ; Return.
     PLA ; #A656
     STA <$5F ; #A657
     PLA ; #A659
@@ -6670,9 +6678,9 @@ L2_A67F:
     .db $90, $9C, %00000000, $B8        ; YES
     .db $F8, $7F, %00000000, $50        ;
 
-L2_A6B7:
-    .db $40 ; #A6B7
-    .db $A0 ; #A6B8
+GiveUpCursorPositions:
+    .db $40                             ; No.
+    .db $A0                             ; Yes.
 
 L2_A6B9:
     .db $50 ; #A6B9

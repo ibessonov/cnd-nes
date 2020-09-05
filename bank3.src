@@ -17,10 +17,10 @@ MultiplyC1C4:
     LDA #$00
     STA <$C2                            ; <$C2 = 0
     LDY #$08                            ; Y = 8, like 8 bits in byte.
-L3_800C:
+MultiplyNextBit:
     ASL <$C2
     ROL <$C1                            ; Shift them as a word.
-    BCC L3_801F                         ; Go to next iteration if lost bit was 0.
+    BCC MultiplyCheckNextBit            ; Go to next iteration if lost bit was 0.
     CLC
     LDA <$C2
     ADC <$C4
@@ -28,9 +28,9 @@ L3_800C:
     LDA <$C1
     ADC #$00
     STA <$C1                            ; <$C1 += carry
-L3_801F:
+MultiplyCheckNextBit:
     DEY                                 ; --Y
-    BNE L3_800C                         ; Continue if Y is positive.
+    BNE MultiplyNextBit                 ; Continue if Y is positive.
     RTS
 
 
