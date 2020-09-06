@@ -14256,6 +14256,8 @@ L3_AF8B:
     .db $00 ; #BADD
     .db $00 ; #BADE
     .db $00 ; #BADF
+
+L3_BAE0:
     .db $81 ; #BAE0
     .db $07 ; #BAE1
     .db $08 ; #BAE2

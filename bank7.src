@@ -24,23 +24,23 @@ L7_C00F:
     LDA #HIGH(OAM)
     STA OAM_DMA_REG                     ; Copy CPU page $02xx to internal PPU OAM memory.
 
-    LDA <$1C                            ; A = <$1C
+    LDA <VRamBuffer3Dirty               ; A = VRamBuffer3Dirty
     BEQ L7_C033                         ; branch if (A == 0)
     LDX #$80                            ; else
-    JSR CopyVRamBufferToVRam            ;                                                   VRAM buffer #3.
+    JSR CopyVRamBufferToVRam
     LDA #$00
-    STA <$1C                            ; <$1C = 0
+    STA <VRamBuffer3Dirty               ; VRamBuffer3Dirty = 0
 L7_C033:
-    LDA <$1D                            ; A = <$1D
+    LDA <VRamBuffer2Dirty               ; A = VRamBuffer2Dirty
     BEQ L7_C040                         ; branch if (A == 0)
     LDX #$58                            ; else
-    JSR CopyVRamBufferToVRam            ;                                                   VRAM buffer #2.
+    JSR CopyVRamBufferToVRam
     LDA #$00
-    STA <$1D                            ; <$1D = 0
+    STA <VRamBuffer2Dirty               ; VRamBuffer2Dirty = 0
 L7_C040:
     LDA <VRamBuffer1Dirty               ; A = VRamBuffer1Dirty
     BEQ L7_C047                         ; Branch if (A == 0)
-    JSR L7_C115                         ;                                                   VRAM buffer #1.
+    JSR L7_C115
 L7_C047:
     LDA <NextChrBank0                   ; A = NextChrBank0
     BEQ L7_C050                         ; Branch if (A == 0)
@@ -89,11 +89,11 @@ L7_C086:
 
 L7_C0A1:
     INC <$92 ; #C0A1
-    LDX #$FF ; #C0A3
-    STX <$90                            ; <$90 = #$FF
+    LDX #$FF
+    STX <NmiFinishedFlag
+
     INX ; #C0A7
     LDY #$04                            ; X = 0, Y = #$04
-
 ; Arr = $80
 ; for (y = 0; y < 4; y++)
 ;   if (Arr[y][x] == 1 && --Arr[y][x + 1] == 0)
@@ -120,7 +120,7 @@ L7_C0B8:
     BNE NmiReturn                       ; Return from NMI if <$F6 is not zero.
 
 NmiSetPrgBank3:
-    LDA #$03                            ; Set first PRG bank to 3.
+    LDA #BANK_3                         ; Set first PRG bank to 3.
     STA $FFF0
     LSR A
     STA $FFF0
@@ -132,17 +132,17 @@ NmiSetPrgBank3:
     STA $FFF0
 
 L7_C0DC:
-    LDX <$DB
-    LDA <$DC, X                         ; A = <$DC[X = <$DB]
-    CMP #$88
-    BEQ L7_C0F6                         ; Break if $88 found.
+    LDX <SfxQueueReadIdx
+    LDA <SfxQueue, X                    ; A = SfxQueue[X = SfxQueueReadIdx]
+    CMP #SFX_Q_NULL
+    BEQ L7_C0F6                         ; Break if SFX_Q_NULL found.
     PHA
-    LDA #$88
-    STA <$DC, X                         ; <$DC[X] = $88
+    LDA #SFX_Q_NULL
+    STA <SfxQueue, X                    ; SfxQueue[X] = SFX_Q_NULL
     INX
     TXA
-    AND #$07
-    STA <$DB                            ; <$DB = ++X & 7
+    AND #SFX_Q_IDX_MASK
+    STA <SfxQueueReadIdx
     PLA
     JSR L3_8003                         ; This should play a sound, bank 3.
     JMP L7_C0DC
@@ -305,7 +305,7 @@ FillScreen:
 
     LDX #$04                            ; X = 4
     CMP #$20                            ;
-    BCS L7_C1DC                         ; Branch if A <= $20,
+    BCS L7_C1DC                         ; Branch if A >= $20,
     LDX <$02                            ; Read original Y value to X.
 L7_C1DC:
     LDY #$00                            ; Y = 0
@@ -398,13 +398,14 @@ L7_C247:
 
 L7_C253:
     LDA <$31                            ; A = <$31
-    CMP #$0B
+    CMP #ZONE_MAP_1
     BEQ L7_C265
-    CMP #$0C
+    CMP #ZONE_MAP_2
     BEQ L7_C265                         ; Don't change banks if A is #$0B or #$0C.
     LDA #$05                            ; Bank #5.
     JSR SetFirstPrgBank                 ; Set it.
     JSR $8000                           ; And execute its main function.
+    ; I think another jump to dead code is missing here.
 L7_C265:
     JMP LitTheScreen
 
@@ -472,25 +473,26 @@ FadeoutFramesLoop:
 FadeoutCompleted:
     RTS
 
-
-    STX <$0E ; #C2BE
-    STY <$0F ; #C2C0
-    ASL A ; #C2C2
-    TAY ; #C2C3
-    INY ; #C2C4
-    PLA ; #C2C5
-    STA <$0C ; #C2C6
-    PLA ; #C2C8
-    STA <$0D ; #C2C9
-    LDA [$0C], Y ; #C2CB
-    TAX ; #C2CD
-    INY ; #C2CE
-    LDA [$0C], Y ; #C2CF
-    STA <$0D ; #C2D1
-    STX <$0C ; #C2D3
-    LDX <$0E ; #C2D5
-    LDY <$0F ; #C2D7
-    JMP [$000C] ; #C2D9
+; C2BE                                  This might be a dead code. Almost the same as SwitchJmp in bank 3.
+L7_SwitchJmp:
+    STX <$0E                            ; <$0E = X
+    STY <$0F                            ; <$0F = Y
+    ASL A
+    TAY
+    INY                                 ; Y = (A <<= 1) + 1. Increment, because JSR stores "address - 1", right?
+    PLA
+    STA <$0C                            ; Pull LSB to <$0C.
+    PLA
+    STA <$0D                            ; Pull MSB to <$0D.
+    LDA [$0C], Y
+    TAX                                 ; Remember LSB of new address to X.
+    INY
+    LDA [$0C], Y                        ; Read MSB of new address.
+    STA <$0D                            ; Store MSB.
+    STX <$0C                            ; Store LSB.
+    LDX <$0E                            ; X = <$0E
+    LDY <$0F                            ; Y = <$0F
+    JMP [$000C]
 
 
 L7_C2DC:
@@ -765,13 +767,13 @@ L7_C574;
     LDA <PpuCtrlVal
     STA PPU_CTRL_REG
     LDA #$F0 ; #C57C
-    JSR L7_F377                         ; Writes A into <$DC array, or maybe not.
+    JSR L7_F377
     JSR WaitNmiAndReadInputs
     LDA #$88 ; #C584
     STA <$E4 ; #C586
 L7_C588:
     LDA #$07
-    JSR L7_F377                         ; Writes #7 into <$DC array?
+    JSR L7_F377
     LDA #$02
     STA <Continues                      ; 3 Continues available.
     JSR FadeoutScreen
@@ -947,9 +949,9 @@ PlayerStatusReturnTwoPlayers:
 
 
 L7_C6B5:
-    LDA #$04 ; #C6B5
-    JSR SetFirstPrgBank ; #C6B7
-    JSR $8000 ; #C6BA
+    LDA #BANK_4
+    JSR SetFirstPrgBank
+    JSR L4_8000 ; #C6BA
     LDX <TwoPlayersMode
 L7_C6BF:                                ; Loop for all players.
     LDA <$54, X                         ; Player state or something like that.
@@ -1082,7 +1084,7 @@ L7_C77B:
     AND #BUTTON_START
     BEQ L7_C795                         ; Branch if start wasn't tapped.
     LDA #$24                            ; A = #$24
-    JSR L7_F379                         ; <$DC[<$DA] = A or something, I still don't understand it.
+    JSR EnqueueSfx
 
     LDY #$F3
     LDA <$98
@@ -1092,7 +1094,7 @@ L7_C77B:
     INY                                 ; Y = <$98 ? #$F3 : #$F4
 L7_C791:
     TYA                                 ; A = Y
-    JSR L7_F379                         ; Put that A in <$DC.
+    JSR EnqueueSfx
 
 L7_C795:
     LDA <$98
@@ -1119,7 +1121,7 @@ L7_C7AA:
     ORA <$4E ; #C7BD
     BNE L7_C7ED ; #C7BF
     JSR L7_C235 ; #C7C1
-    LDA <$37 ; #C7C4
+    LDA <CurrentZone
     STA <$31 ; #C7C6
     LDA #$02 ; #C7C8
     JSR SetFirstPrgBank ; #C7CA
@@ -1161,9 +1163,9 @@ L7_C80C:
     STA <$6A, X ; #C814
     DEX ; #C816
     BPL L7_C80C ; #C817
-    LDA #$04 ; #C819
+    LDA #BANK_4 ; #C819
     JSR SetFirstPrgBank ; #C81B
-    JSR $8090 ; #C81E
+    JSR L4_8090 ; #C81E
     LDX <$6C ; #C821
     BEQ L7_C828 ; #C823
     JSR L7_E576 ; #C825
@@ -1186,28 +1188,29 @@ L7_C83E:
     LDA <$B8 ; #C84A
     BEQ L7_C85E ; #C84C
     BMI L7_C861 ; #C84E
-    LDA <$14 ; #C850
-    AND #$10 ; #C852
+    LDA <Joypad1Tapped
+    AND #BUTTON_START
     BNE L7_C861 ; #C854
-    LDA #$01 ; #C856
-    JSR SetFirstPrgBank ; #C858
+    LDA #BANK_1
+    JSR SetFirstPrgBank
     JSR $9000 ; #C85B
 L7_C85E:
     JMP L7_C77B ; #C85E
+
 L7_C861:
     INC <$BD ; #C861
     LDA <$BD ; #C863
     CMP #$03 ; #C865
     BNE L7_C86D ; #C867
     LDA #$00 ; #C869
-    STA <$BD ; #C86B
+    STA <$BD                            ; <$BD = (<$BD + 1) % 3
 L7_C86D:
     LDX #$0C ; #C86D
     LDA #$00 ; #C86F
 L7_C871:
     STA <$B0, X ; #C871
     DEX ; #C873
-    BPL L7_C871 ; #C874
+    BPL L7_C871                         ; B0 .. BC
     JMP L7_C588 ; #C876
 
 
@@ -1249,6 +1252,7 @@ L7_C88E:
     STA <$4F ; #C8B9
     LDA #$0C ; #C8BB
     JMP L7_F377 ; #C8BD
+
 ZoneJCompleted:
     LDA #$01 ; #C8C0
     STA <$4E ; #C8C2
@@ -1298,7 +1302,6 @@ L7_C903:
 L7_C913:
     LDA #$00 ; #C913
     STA <$52, X ; #C915
-
     LDY <$54, X ; #C917
     LDA L7_C926, Y ; #C919
     STA <$00 ; #C91C
@@ -1309,33 +1312,33 @@ L7_C913:
 
 ; LSB of some addresses
 L7_C926:
-    .db LOW(L7_C940) ; #C926
-    .db LOW(L7_CBAC) ; #C927
-    .db LOW(L7_CC9F) ; #C928
-    .db LOW(L7_CD12) ; #C929
-    .db LOW(L7_CD50) ; #C92A
-    .db LOW(L7_CED8) ; #C92B
-    .db LOW(L7_CF5C) ; #C92C
-    .db LOW(L7_CFDB) ; #C92D
-    .db LOW(L7_D015) ; #C92E
-    .db LOW(L7_D05E) ; #C92F
-    .db LOW(L7_D1DC) ; #C930
-    .db LOW(L7_D304) ; #C931
+    .db LOW(L7_C940)
+    .db LOW(L7_CBAC)
+    .db LOW(L7_CC9F)
+    .db LOW(L7_CD12)
+    .db LOW(L7_CD50)
+    .db LOW(L7_CED8)
+    .db LOW(L7_CF5C)
+    .db LOW(L7_CFDB)
+    .db LOW(L7_D015)
+    .db LOW(L7_D05E)
+    .db LOW(L7_D1DC)
+    .db LOW(L7_D304)
     .db LOW(L7_D133)
 ; MSB of some addresses
 L7_C933:
-    .db HIGH(L7_C940) ; #C933
-    .db HIGH(L7_CBAC) ; #C934
-    .db HIGH(L7_CC9F) ; #C935
-    .db HIGH(L7_CD12) ; #C936
-    .db HIGH(L7_CD50) ; #C937
-    .db HIGH(L7_CED8) ; #C938
-    .db HIGH(L7_CF5C) ; #C939
-    .db HIGH(L7_CFDB) ; #C93A
-    .db HIGH(L7_D015) ; #C93B
-    .db HIGH(L7_D05E) ; #C93C
-    .db HIGH(L7_D1DC) ; #C93D
-    .db HIGH(L7_D304) ; #C93E
+    .db HIGH(L7_C940)
+    .db HIGH(L7_CBAC)
+    .db HIGH(L7_CC9F)
+    .db HIGH(L7_CD12)
+    .db HIGH(L7_CD50)
+    .db HIGH(L7_CED8)
+    .db HIGH(L7_CF5C)
+    .db HIGH(L7_CFDB)
+    .db HIGH(L7_D015)
+    .db HIGH(L7_D05E)
+    .db HIGH(L7_D1DC)
+    .db HIGH(L7_D304)
     .db HIGH(L7_D133)
 
 
@@ -1407,7 +1410,7 @@ L7_C9BA:
     BNE L7_CA05 ; #C9BE
     JMP L7_CC9F ; #C9C0
 L7_C9C3:
-    LDA <$14, X ; #C9C3
+    LDA <Joypad1Tapped, X
     AND #BUTTON_B ; #C9C5
     BEQ L7_C9FF ; #C9C7
     LDA <$56, X ; #C9C9
@@ -1461,8 +1464,8 @@ L7_CA2E:
     JSR L7_CF08 ; #CA2E
     JMP L7_CA25 ; #CA31
 L7_CA34:
-    LDA <$16, X ; #CA34
-    AND #$03 ; #CA36
+    LDA <Joypad1Pressed, X
+    AND #(BUTTON_LEFT | BUTTON_RIGHT)
     BNE L7_CAA2 ; #CA38
     LDA <$58, X ; #CA3A
     AND #$03 ; #CA3C
@@ -1573,7 +1576,7 @@ L7_CAFF:
     BNE L7_CB73 ; #CB08
     JMP L7_D3E7 ; #CB0A
 L7_CB0D:
-    LDA <$14, X ; #CB0D
+    LDA <Joypad1Tapped, X
     AND #BUTTON_B ; #CB0F
     BEQ L7_CB8A ; #CB11
     LDA <$10 ; #CB13
@@ -1621,7 +1624,7 @@ L7_CB27:
     JSR L7_E817 ; #CB70
 L7_CB73:
     LDA #$11 ; #CB73
-    JSR L7_F379 ; #CB75
+    JSR EnqueueSfx ; #CB75
     LDA $0342, X ; #CB78
     STA $0420, X ; #CB7B
     LDA #$00 ; #CB7E
@@ -1640,10 +1643,14 @@ L7_CB8B:
     STA $0410, X ; #CB99
     JSR L7_D3E7 ; #CB9C
     JMP L7_D40B ; #CB9F
+
+L7_CBA2:
     .db $10 ; #CBA2
     .db $00 ; #CBA3
     .db $F0 ; #CBA4
     .db $FF ; #CBA5
+
+L7_CBA6:
     .db $14 ; #CBA6
     .db $00 ; #CBA7
     .db $EC ; #CBA8
@@ -1661,8 +1668,8 @@ L7_CBB3:
     BMI L7_CBCC ; #CBB6
     LDA #$00 ; #CBB8
     STA <$5A, X ; #CBBA
-    LDA <$16, X ; #CBBC
-    AND #$80 ; #CBBE
+    LDA <Joypad1Pressed, X
+    AND #BUTTON_A ; #CBBE
     BNE L7_CBCC ; #CBC0
     LDA $0560, X ; #CBC2
     CMP #$05 ; #CBC5
@@ -1716,7 +1723,7 @@ L7_CC15:
     BEQ L7_CC9B ; #CC1A
 L7_CC1C:
     LDA #$10 ; #CC1C
-    JSR L7_F379 ; #CC1E
+    JSR EnqueueSfx ; #CC1E
     LDA $0340, X ; #CC21
     LDY <$56, X ; #CC24
     BEQ L7_CC2B ; #CC26
@@ -1888,7 +1895,7 @@ L7_CD50:
     CPY #$82 ; #CD7A
     BCC L7_CDB5 ; #CD7C
     LDA #$12 ; #CD7E
-    JSR L7_F379 ; #CD80
+    JSR EnqueueSfx ; #CD80
     LDA #$01 ; #CD83
     STA $0460, Y ; #CD85
     LDA $04F0, Y ; #CD88
@@ -1932,7 +1939,7 @@ L7_CDCB:
     CPY #$82 ; #CDD0
     BCC L7_CE28 ; #CDD2
     LDA #$12 ; #CDD4
-    JSR L7_F379 ; #CDD6
+    JSR EnqueueSfx ; #CDD6
     LDA $0450, Y ; #CDD9
     AND #$F0 ; #CDDC
     STA $0450, Y ; #CDDE
@@ -2307,7 +2314,7 @@ L7_D0BC:
     LDA $0354, X ; #D0BC
     STA $0420, X ; #D0BF
     LDA #$14 ; #D0C2
-    JSR L7_F379 ; #D0C4
+    JSR EnqueueSfx ; #D0C4
     LDA #$3C ; #D0C7
     STA <$5E, X ; #D0C9
     LDA #$00 ; #D0CB
@@ -2412,10 +2419,10 @@ L7_D15B:                                ; All players are dead.
     LDA <Continues
     BMI ResetOnNoContinuesLeft          ; Continues == -1, can't proceed. Immediate reset.
 WaitForAccept:
-    LDA <$14 ; #D187
+    LDA <Joypad1Tapped
     AND #(BUTTON_A | BUTTON_START)
     BNE MenuItemAccepted                ; Looks like the menu acceptance input.
-    LDA <$14 ; #D18D
+    LDA <Joypad1Tapped
     AND #(BUTTON_UP | BUTTON_DOWN)
     BEQ NoInput                         ; Up/Down weren't pressed.
     LSR A
@@ -2425,7 +2432,7 @@ WaitForAccept:
     LDA L7_D1DA, Y                      ; There must be only two choices.
     STA OAM                             ; Cursor is the first sprite. Can this be a continue screen?
     LDA #$27
-    JSR L7_F379                         ; This mysterious call should handle music and animation on continue screen, I hope.
+    JSR EnqueueSfx
 NoInput:
     JSR WaitNmiAndReadInputs
     JMP WaitForAccept
@@ -2515,7 +2522,7 @@ L7_D229:
     JMP L7_D133 ; #D229
 L7_D22C:
     LDA #$15 ; #D22C
-    JSR L7_F379 ; #D22E
+    JSR EnqueueSfx ; #D22E
 L7_D231:
     LDA <$5E, X ; #D231
     CMP #$78 ; #D233
@@ -2840,10 +2847,10 @@ L7_D471:
     TAY ; #D476
     LDA $04F0, X ; #D477
     CLC ; #D47A
-    ADC $CBA2, Y ; #D47B
+    ADC (L7_CBA2 + 0), Y ; #D47B
     STA <$00 ; #D47E
     LDA $0500, X ; #D480
-    ADC $CBA3, Y ; #D483
+    ADC (L7_CBA2 + 1), Y ; #D483
     STA <$01 ; #D486
     LDY <$56, X ; #D488
     LDA <$00 ; #D48A
@@ -2859,10 +2866,10 @@ L7_D471:
     LDX <$00 ; #D4A3
     LDA $0470, Y ; #D4A5
     CLC ; #D4A8
-    ADC $CBA6, X ; #D4A9
+    ADC (L7_CBA6 + 0), X ; #D4A9
     STA $0470, Y ; #D4AC
     LDA $0480, Y ; #D4AF
-    ADC $CBA7, X ; #D4B2
+    ADC (L7_CBA6 + 1), X ; #D4B2
     STA $0480, Y ; #D4B5
     LDX <$01 ; #D4B8
     LDA $0510, X ; #D4BA
@@ -4124,6 +4131,7 @@ L7_DD03:
     LDA <ScrollX ; #DD05
     STA <$28 ; #DD07
     RTS ; #DD09
+
     .db $91 ; #DD0A
     .db $01 ; #DD0B
     .db $6F ; #DD0C
@@ -4140,6 +4148,7 @@ L7_DD03:
     .db $CC ; #DD17
     .db $CC ; #DD18
     .db $33 ; #DD19
+
 L7_DD1A:
     LDA <ScrollY ; #DD1A
     SEC ; #DD1C
@@ -4651,6 +4660,7 @@ L7_E025:
     .db $80 ; #E060
     .db $00 ; #E061
     .db $80 ; #E062
+
     .db $20 ; #E063
     .db $20 ; #E064
     .db $21 ; #E065
@@ -4691,36 +4701,48 @@ L7_E06B:
 L7_E096:
     JSR L7_C247 ; #E096
     LDX <$31 ; #E099
+
     LDA L7_E287, X ; #E09B
     STA <$32 ; #E09E
+
     LDA L7_E296, X ; #E0A0
     STA <$33 ; #E0A3
+
     LDA L7_E2A5, X ; #E0A5
     STA <$34 ; #E0A8
+
     LDA L7_E2B4, X ; #E0AA
     STA <$35 ; #E0AD
-    LDA L7_E1F1, X ; #E0AF
+
+    LDA ZonesPrgBankArray, X
     STA <$36 ; #E0B2
+
     LDA L7_E200, X ; #E0B4
     STA <$22 ; #E0B7
     STA <$23 ; #E0B9
+
     LDA L7_E20F, X ; #E0BB
     STA <$FB ; #E0BE
     STA $0520 ; #E0C0
     STA $0521 ; #E0C3
     STA <$2D ; #E0C6
+
     LDA #$00 ; #E0C8
     STA <$FD ; #E0CA
     STA $0500 ; #E0CC
     STA $0501 ; #E0CF
+
     LDY L7_E21E, X ; #E0D2
     STY <$2C ; #E0D5
     INY ; #E0D7
     STY <$2E ; #E0D8
+
     LDA ZonesChr0Array, X
     STA <NextChrBank0
+
     LDA ZonesChr1Array, X
     STA <NextChrBank1
+
     LDA ZonesMusicArray, X
     LDY <$B8 ; #E0E7
     BNE L7_E0EE ; #E0E9
@@ -4744,6 +4766,7 @@ L7_E0EE:
     LDA <$31 ; #E115
     CMP #$0D ; #E117
     BNE L7_E176 ; #E119
+
     LDX <$50 ; #E11B
 L7_E11D:
     LDA <$54, X ; #E11D
@@ -4762,6 +4785,7 @@ L7_E11D:
 L7_E13E:
     DEX ; #E13E
     BPL L7_E11D ; #E13F
+
     LDX #$01 ; #E141
 L7_E143:
     LDA #$80 ; #E143
@@ -4784,17 +4808,19 @@ L7_E143:
     STA $04EE, X ; #E170
     DEX ; #E173
     BPL L7_E143 ; #E174
+
 L7_E176:
     JMP L7_C253 ; #E176
+
 L7_E179:
     JSR DisableDisplay ; #E179
     JSR L7_C235 ; #E17C
-    LDX <$50 ; #E17F
+    LDX <TwoPlayersMode
 L7_E181:
     LDA $0400, X ; #E181
     AND #$DF ; #E184
     STA $0400, X ; #E186
-    LDA <$54, X ; #E189
+    LDA <$54, X                         ; something something player status
     CMP #$0B ; #E18B
     BNE L7_E193 ; #E18D
     LDA #$00 ; #E18F
@@ -4802,6 +4828,7 @@ L7_E181:
 L7_E193:
     DEX ; #E193
     BPL L7_E181 ; #E194
+
     LDA #$01 ; #E196
     STA <$52 ; #E198
     STA <$20 ; #E19A
@@ -4838,14 +4865,14 @@ L7_E1CC:
     CMP <$0F ; #E1D5
     BNE L7_E1CC ; #E1D7
     LDA <$31 ; #E1D9
-    CMP #$0B ; #E1DB
-    BCS L7_E1EA ; #E1DD
-    LDA #$04 ; #E1DF
-    JSR SetFirstPrgBank ; #E1E1
-    JSR $8040 ; #E1E4
-    JSR $8090 ; #E1E7
+    CMP #ZONE_MAP_1
+    BCS L7_E1EA                         ; Return if not level zone?
+    LDA #BANK_4
+    JSR SetFirstPrgBank
+    JSR L4_8040 ; #E1E4
+    JSR L4_8090 ; #E1E7
 L7_E1EA:
-    RTS ; #E1EA
+    RTS
 
 L7_E1EB:
     .db $38 ; #E1EB
@@ -4859,73 +4886,18 @@ L7_E1EF:
     .db $18 ; #E1EF
     .db $E8 ; #E1F0
 
-L7_E1F1:
-    .db $00 ; #E1F1
-    .db $01 ; #E1F2
-    .db $01 ; #E1F3
-    .db $03 ; #E1F4
-    .db $02 ; #E1F5
-    .db $06 ; #E1F6
-    .db $04 ; #E1F7
-    .db $03 ; #E1F8
-    .db $06 ; #E1F9
-    .db $04 ; #E1FA
-    .db $05 ; #E1FB
-    .db $05 ; #E1FC
-    .db $05 ; #E1FD
-    .db $02 ; #E1FE
-    .db $02 ; #E1FF
+    ;   0    A    B    C    D    E    F    G    H    I    J    M1   M2   ?    ?
+ZonesPrgBankArray:
+    .db $00, $01, $01, $03, $02, $06, $04, $03, $06, $04, $05, $05, $05, $02, $02
 
 L7_E200:
-    .db $23 ; #E200
-    .db $15 ; #E201
-    .db $10 ; #E202
-    .db $10 ; #E203
-    .db $18 ; #E204
-    .db $10 ; #E205
-    .db $20 ; #E206
-    .db $18 ; #E207
-    .db $20 ; #E208
-    .db $10 ; #E209
-    .db $18 ; #E20A
-    .db $05 ; #E20B
-    .db $00 ; #E20C
-    .db $00 ; #E20D
-    .db $00 ; #E20E
+    .db $23, $15, $10, $10, $18, $10, $20, $18, $20, $10, $18, $05, $00, $00, $00
 
 L7_E20F:
-    .db $05 ; #E20F
-    .db $07 ; #E210
-    .db $02 ; #E211
-    .db $02 ; #E212
-    .db $03 ; #E213
-    .db $02 ; #E214
-    .db $04 ; #E215
-    .db $03 ; #E216
-    .db $04 ; #E217
-    .db $02 ; #E218
-    .db $03 ; #E219
-    .db $05 ; #E21A
-    .db $05 ; #E21B
-    .db $00 ; #E21C
-    .db $00 ; #E21D
+    .db $05, $07, $02, $02, $03, $02, $04, $03, $04, $02, $03, $05, $05, $00, $00
 
 L7_E21E:
-    .db $06 ; #E21E
-    .db $02 ; #E21F
-    .db $07 ; #E220
-    .db $07 ; #E221
-    .db $07 ; #E222
-    .db $07 ; #E223
-    .db $07 ; #E224
-    .db $07 ; #E225
-    .db $07 ; #E226
-    .db $07 ; #E227
-    .db $07 ; #E228
-    .db $00 ; #E229
-    .db $00 ; #E22A
-    .db $00 ; #E22B
-    .db $00 ; #E22C
+    .db $06, $02, $07, $07, $07, $07, $07, $07, $07, $07, $07, $00, $00, $00, $00
 
 ZonesChr0Array:
     .db $80, $81, $80, $83, $84, $86, $85, $88, $81, $86, $87, $8C, $8C, $80, $9D
@@ -5772,7 +5744,7 @@ L7_E576:
     LDA #$F2 ; #E586
     JSR L7_F377 ; #E588
     LDA #$23 ; #E58B
-    JMP L7_F379 ; #E58D
+    JMP EnqueueSfx ; #E58D
 L7_E590:                                ; Do we load new "screen" here? Like level or menu?
     STX <$10 ; #E590
     JSR L7_C247 ; #E592                 ; Dim the screen and light it up again, I guess...
@@ -5853,11 +5825,11 @@ L7_E627:
     STA <$25 ; #E634
     LDA #$01 ; #E636
     STA <$23 ; #E638
-    LDA #$04 ; #E63A
+    LDA #BANK_4
     JSR SetFirstPrgBank ; #E63C
-    JSR $8090 ; #E63F
+    JSR L4_8090 ; #E63F
     INC <$FD ; #E642
-    JSR $8090 ; #E644
+    JSR L4_8090 ; #E644
     DEC <$FD ; #E647
     LDA #$02 ; #E649
     JSR SetFirstPrgBank ; #E64B
@@ -5906,11 +5878,11 @@ L7_E656:
 
 MapScreenHideBeatenZones:
     LDA <$31                            ; A = <$31
-    CMP #$0B
+    CMP #ZONE_MAP_1
     BEQ MapScreen1HideBeatenZones
-    CMP #$0C
-    BEQ L7_E76D
-    RTS                                 ; Return if it's not #$0B or #$0C.
+    CMP #ZONE_MAP_2
+    BEQ MapScreen2HideBeatenZones
+    RTS                                 ; Return if it's not a map zone.
 MapScreen1HideBeatenZones:
     LDA #$00
     STA <$00                            ; <$00 = #0
@@ -5919,7 +5891,7 @@ MapScreen1HideBeatenZones:
     LDA #$07
     STA <$02                            ; <$02 = #7
     BNE MapScreenMaybeMarkZoneBeaten    ; Jump unconditionally.
-L7_E76D:
+MapScreen2HideBeatenZones:
     LDA #$08
     STA <$00                            ; <$00 = #8
     LDA #$02
@@ -6538,7 +6510,7 @@ L7_EAEE:
     BNE L7_EB0F ; #EB02
     JSR L7_E817 ; #EB04
     LDA #$17 ; #EB07
-    JSR L7_F379 ; #EB09
+    JSR EnqueueSfx ; #EB09
     JSR L7_F3F5 ; #EB0C
 L7_EB0F:
     RTS ; #EB0F
@@ -8007,20 +7979,20 @@ L7_F369:
 ; X and Y registers are effectively untouched by this function, cool.
 L7_F377:
     STA <$D9                            ; Store A in <$D9.
-L7_F379:
+EnqueueSfx:
     STX <$00                            ; Store X in temp buffer to get it back later.
-    LDX <$DA                            ; Read X from <$DA.
+    LDX <SfxQueueWriteIdx               ; Read X from SfxQueueWriteIdx.
     STA <$01                            ; Store A in temp buffer to get it back later as well.
-    LDA <$DC, X                         ; A = <$DC[X]
-    CMP #$88
-    BNE L7_F38F                         ; Return if value is not #$88.
+    LDA <SfxQueue, X                    ; A = SfxQueue[X]
+    CMP #SFX_Q_NULL
+    BNE ReturnFromEnqueueSfx            ; Return if value is not SFX_Q_NULL.
     LDA <$01                            ; Restore A from temp buffer.
-    STA <$DC, X                         ; <$DC[X] = A
+    STA <SfxQueue, X                    ; SfxQueue[X] = A
     INX                                 ; ++X
     TXA                                 ; A = X
-    AND #$07                            ; A &= 7
-    STA <$DA                            ; <$DA = A
-L7_F38F:
+    AND #SFX_Q_IDX_MASK                 ; A &= 7
+    STA <SfxQueueWriteIdx               ; SfxQueueWriteIdx = A
+ReturnFromEnqueueSfx:
     LDX <$00                            ; Restore X from temp buffer.
     RTS
 
@@ -9045,7 +9017,7 @@ L7_FA34:
     LDY #$03 ; #FAB8
     STY <$05 ; #FABA
 L7_FABC:
-    LDX $FB01, Y ; #FABC
+    LDX L7_FB01, Y ; #FABC
     TYA ; #FABF
     CLC ; #FAC0
     ADC <$11 ; #FAC1
@@ -9074,188 +9046,209 @@ L7_FABC:
     LDA #$06 ; #FAFC
     JMP SetFirstPrgBank ; #FAFE
 
-    ; Data
+L7_FB01:
     .db $03 ; #FB01
-    ORA <$11 ; #FB02
+    .db $05 ; #FB02
+    .db $11 ; #FB03
     .db $13 ; #FB04
-    TYA ; #FB05
-    STA $9796, Y ; #FB06
+    .db $98 ; #FB05
+    .db $99 ; #FB06
+    .db $96 ; #FB07
+    .db $97 ; #FB08
     .db $52 ; #FB09
     .db $53 ; #FB0A
     .db $54 ; #FB0B
-    EOR <$76, X ; #FB0C
-    ROR <$76, X ; #FB0E
-    ROR <$DB, X ; #FB10
+    .db $55 ; #FB0C
+    .db $76 ; #FB0D
+    .db $76 ; #FB0E
+    .db $76 ; #FB0F
+    .db $76 ; #FB10
+    .db $DB ; #FB11
     .db $DC ; #FB12
-    CMP $C8DE, X ; #FB13
-    CMP #$CA ; #FB16
+    .db $DD ; #FB13
+    .db $DE ; #FB14
+    .db $C8 ; #FB15
+    .db $C9 ; #FB16
+    .db $CA ; #FB17
     .db $CB ; #FB18
-    LDA <$B1 ; #FB19
-    BNE L7_FB3D ; #FB1B
-    LDA #$00 ; #FB1D
-    STA <$B0 ; #FB1F
-    LDA #$60 ; #FB21
-    STA <$B1 ; #FB23
-    LDA #$00 ; #FB25
-    STA <$B2 ; #FB27
-    LDA #$62 ; #FB29
-    STA <$B3 ; #FB2B
-    LDA #$00 ; #FB2D
-    STA <$B4 ; #FB2F
-    LDA #$64 ; #FB31
-    STA <$B5 ; #FB33
-    LDA #$00 ; #FB35
-    STA <$B6 ; #FB37
-    LDA #$66 ; #FB39
-    STA <$B7 ; #FB3B
-L7_FB3D:
+
+
+; I guess this is a dead code that has been used while development to record demos.
+RecordDemoInputs:                       ; FB19
+    LDA <(DemoInputsRecJ1Tap + 1)
+    BNE RecordDemoInputsJ1Tap           ; Skip default initialization to WRAM addresses.
+    LDA #$00
+    STA <(DemoInputsRecArray + 0)
+    LDA #$60
+    STA <(DemoInputsRecArray + 1)
+    LDA #$00
+    STA <(DemoInputsRecArray + 2)
+    LDA #$62
+    STA <(DemoInputsRecArray + 3)
+    LDA #$00
+    STA <(DemoInputsRecArray + 4)
+    LDA #$64
+    STA <(DemoInputsRecArray + 5)
+    LDA #$00
+    STA <(DemoInputsRecArray + 6)
+    LDA #$66
+    STA <(DemoInputsRecArray + 7)       ; 00 60 00 62 00 64 00 66. Addresses, but for what? Inputs for demo play?
+                                        ; Reading from $6xxx will cause open bus behavior.
+                                        ; As stated in various sources, "LDA [$B0], Y" will cause it to get byte $6x.
+                                        ; Interpreted as an input, these values don't make much sense.
+RecordDemoInputsJ1Tap:
     LDY #$00 ; #FB3D
     STY <$E4 ; #FB3F
     STY <$E5 ; #FB41
     STY <$E6 ; #FB43
     STY <$E7 ; #FB45
-    LDA <$14 ; #FB47
-    CMP [$B0], Y ; #FB49
-    BNE L7_FB5D ; #FB4B
-    INY ; #FB4D
-    LDA [$B0], Y ; #FB4E
-    CMP #$FF ; #FB50
-    BEQ L7_FB5D ; #FB52
-    LDA [$B0], Y ; #FB54
-    CLC ; #FB56
-    ADC #$01 ; #FB57
-    STA [$B0], Y ; #FB59
-    BNE L7_FB83 ; #FB5B
-L7_FB5D:
-    LDY #$00 ; #FB5D
-    LDA <$B0 ; #FB5F
-    CLC ; #FB61
-    ADC #$02 ; #FB62
-    STA <$B0 ; #FB64
-    LDA <$B1 ; #FB66
-    ADC #$00 ; #FB68
-    STA <$B1 ; #FB6A
-    LDA <$14 ; #FB6C
-    STA [$B0], Y ; #FB6E
-    LDA <$B0 ; #FB70
-    CMP #$FE ; #FB72
-    BNE L7_FB83 ; #FB74
-    LDA <$B1 ; #FB76
-    CMP #$61 ; #FB78
-    BNE L7_FB83 ; #FB7A
-    LDA #$FF ; #FB7C
-    STA [$B0], Y ; #FB7E
-    JMP L7_FC3E ; #FB80
-L7_FB83:
-    LDY #$00 ; #FB83
-    LDA <$15 ; #FB85
-    CMP [$B2], Y ; #FB87
-    BNE L7_FB9B ; #FB89
-    INY ; #FB8B
-    LDA [$B2], Y ; #FB8C
-    CMP #$FF ; #FB8E
-    BEQ L7_FB9B ; #FB90
-    LDA [$B2], Y ; #FB92
-    CLC ; #FB94
-    ADC #$01 ; #FB95
-    STA [$B2], Y ; #FB97
-    BNE L7_FBC1 ; #FB99
-L7_FB9B:
-    LDY #$00 ; #FB9B
-    LDA <$B2 ; #FB9D
-    CLC ; #FB9F
-    ADC #$02 ; #FBA0
-    STA <$B2 ; #FBA2
-    LDA <$B3 ; #FBA4
-    ADC #$00 ; #FBA6
-    STA <$B3 ; #FBA8
-    LDA <$15 ; #FBAA
-    STA [$B2], Y ; #FBAC
-    LDA <$B2 ; #FBAE
-    CMP #$FE ; #FBB0
-    BNE L7_FBC1 ; #FBB2
-    LDA <$B3 ; #FBB4
-    CMP #$63 ; #FBB6
-    BNE L7_FBC1 ; #FBB8
-    LDA #$FF ; #FBBA
-    STA [$B2], Y ; #FBBC
-    JMP L7_FC3E ; #FBBE
-L7_FBC1:
-    LDY #$00 ; #FBC1
-    LDA <$16 ; #FBC3
-    CMP [$B4], Y ; #FBC5
-    BNE L7_FBD9 ; #FBC7
-    INY ; #FBC9
-    LDA [$B4], Y ; #FBCA
-    CMP #$FF ; #FBCC
-    BEQ L7_FBD9 ; #FBCE
-    LDA [$B4], Y ; #FBD0
-    CLC ; #FBD2
-    ADC #$01 ; #FBD3
-    STA [$B4], Y ; #FBD5
-    BNE L7_FBFF ; #FBD7
-L7_FBD9:
-    LDY #$00 ; #FBD9
-    LDA <$B4 ; #FBDB
-    CLC ; #FBDD
-    ADC #$02 ; #FBDE
-    STA <$B4 ; #FBE0
-    LDA <$B5 ; #FBE2
-    ADC #$00 ; #FBE4
-    STA <$B5 ; #FBE6
-    LDA <$16 ; #FBE8
-    STA [$B4], Y ; #FBEA
-    LDA <$B4 ; #FBEC
-    CMP #$FE ; #FBEE
-    BNE L7_FBFF ; #FBF0
-    LDA <$B5 ; #FBF2
-    CMP #$65 ; #FBF4
-    BNE L7_FBFF ; #FBF6
-    LDA #$FF ; #FBF8
-    STA [$B4], Y ; #FBFA
-    JMP L7_FC3E ; #FBFC
-L7_FBFF:
-    LDY #$00 ; #FBFF
-    LDA <$17 ; #FC01
-    CMP [$B6], Y ; #FC03
-    BNE L7_FC17 ; #FC05
-    INY ; #FC07
-    LDA [$B6], Y ; #FC08
-    CMP #$FF ; #FC0A
-    BEQ L7_FC17 ; #FC0C
-    LDA [$B6], Y ; #FC0E
-    CLC ; #FC10
-    ADC #$01 ; #FC11
-    STA [$B6], Y ; #FC13
-    BNE L7_FC3D ; #FC15
-L7_FC17:
-    LDY #$00 ; #FC17
-    LDA <$B6 ; #FC19
-    CLC ; #FC1B
-    ADC #$02 ; #FC1C
-    STA <$B6 ; #FC1E
-    LDA <$B7 ; #FC20
-    ADC #$00 ; #FC22
-    STA <$B7 ; #FC24
-    LDA <$17 ; #FC26
-    STA [$B6], Y ; #FC28
-    LDA <$B6 ; #FC2A
-    CMP #$FE ; #FC2C
-    BNE L7_FC3D ; #FC2E
-    LDA <$B7 ; #FC30
-    CMP #$67 ; #FC32
-    BNE L7_FC3D ; #FC34
-    LDA #$FF ; #FC36
-    STA [$B6], Y ; #FC38
-    JMP L7_FC3E ; #FC3A
-L7_FC3D:
-    RTS ; #FC3D
-L7_FC3E:
-    LDA #$08 ; #FC3E
-    JSR L7_F379 ; #FC40
-L7_FC43:
-    JSR WaitNmiAndReadInputs ; #FC43
-    JMP L7_FC43 ; #FC46
+
+    LDA <Joypad1Tapped
+    CMP [DemoInputsRecJ1Tap], Y
+    BNE IncJ1TapAddr                    ; Branch if input doesn't match.
+    INY
+    LDA [DemoInputsRecJ1Tap], Y
+    CMP #$FF
+    BEQ IncJ1TapAddr                    ; Branch if second byte is $FF.
+    LDA [DemoInputsRecJ1Tap], Y
+    CLC
+    ADC #$01
+    STA [DemoInputsRecJ1Tap], Y         ; ++[DemoInputsRecJ1Tap][Y]
+    BNE RecordDemoInputsJ2Tap           ; It wasn't $FF, so result is not $00. Jump is unconditional.
+IncJ1TapAddr:
+    LDY #$00
+    LDA <DemoInputsRecJ1Tap
+    CLC
+    ADC #$02
+    STA <DemoInputsRecJ1Tap             ; Increment LSB of indirect address by 2.
+    LDA <(DemoInputsRecJ1Tap + 1)
+    ADC #$00
+    STA <(DemoInputsRecJ1Tap + 1)       ; Increment MSB by carry flag.
+    LDA <Joypad1Tapped
+    STA [DemoInputsRecJ1Tap], Y         ; Store joy 1 input into new address.
+    LDA <DemoInputsRecJ1Tap
+    CMP #$FE
+    BNE RecordDemoInputsJ2Tap
+    LDA <(DemoInputsRecJ1Tap + 1)
+    CMP #$61
+    BNE RecordDemoInputsJ2Tap
+    LDA #$FF                            ; Address is $6200 - 2.
+    STA [DemoInputsRecJ1Tap], Y         ; [DemoInputsRecJ1Tap][1] = $FF
+    JMP RecordDemoInputsBufferOverflow
+
+RecordDemoInputsJ2Tap:
+    LDY #$00
+    LDA <Joypad2Tapped
+    CMP [DemoInputsRecJ2Tap], Y
+    BNE IncJ2TapAddr
+    INY
+    LDA [DemoInputsRecJ2Tap], Y
+    CMP #$FF
+    BEQ IncJ2TapAddr
+    LDA [DemoInputsRecJ2Tap], Y
+    CLC
+    ADC #$01
+    STA [DemoInputsRecJ2Tap], Y
+    BNE RecordDemoInputsJ1Prs
+IncJ2TapAddr:
+    LDY #$00
+    LDA <DemoInputsRecJ2Tap
+    CLC
+    ADC #$02
+    STA <DemoInputsRecJ2Tap
+    LDA <(DemoInputsRecJ2Tap + 1)
+    ADC #$00
+    STA <(DemoInputsRecJ2Tap + 1)
+    LDA <Joypad2Tapped
+    STA [DemoInputsRecJ2Tap], Y
+    LDA <DemoInputsRecJ2Tap
+    CMP #$FE
+    BNE RecordDemoInputsJ1Prs
+    LDA <(DemoInputsRecJ2Tap + 1)
+    CMP #$63
+    BNE RecordDemoInputsJ1Prs
+    LDA #$FF
+    STA [DemoInputsRecJ2Tap], Y
+    JMP RecordDemoInputsBufferOverflow
+
+RecordDemoInputsJ1Prs:
+    LDY #$00
+    LDA <Joypad1Pressed
+    CMP [DemoInputsRecJ1Prs], Y
+    BNE IncJ1PrsAddr
+    INY
+    LDA [DemoInputsRecJ1Prs], Y
+    CMP #$FF
+    BEQ IncJ1PrsAddr
+    LDA [DemoInputsRecJ1Prs], Y
+    CLC
+    ADC #$01
+    STA [DemoInputsRecJ1Prs], Y
+    BNE RecordDemoInputsJ2Prs
+IncJ1PrsAddr:
+    LDY #$00
+    LDA <DemoInputsRecJ1Prs
+    CLC
+    ADC #$02
+    STA <DemoInputsRecJ1Prs
+    LDA <(DemoInputsRecJ1Prs + 1)
+    ADC #$00
+    STA <(DemoInputsRecJ1Prs + 1)
+    LDA <Joypad1Pressed
+    STA [DemoInputsRecJ1Prs], Y
+    LDA <DemoInputsRecJ1Prs
+    CMP #$FE
+    BNE RecordDemoInputsJ2Prs
+    LDA <(DemoInputsRecJ1Prs + 1)
+    CMP #$65
+    BNE RecordDemoInputsJ2Prs
+    LDA #$FF
+    STA [DemoInputsRecJ1Prs], Y
+    JMP RecordDemoInputsBufferOverflow
+
+RecordDemoInputsJ2Prs:
+    LDY #$00
+    LDA <Joypad2Pressed
+    CMP [DemoInputsRecJ2Prs], Y
+    BNE IncJ2PrsAddr
+    INY
+    LDA [DemoInputsRecJ2Prs], Y
+    CMP #$FF
+    BEQ IncJ2PrsAddr
+    LDA [DemoInputsRecJ2Prs], Y
+    CLC
+    ADC #$01
+    STA [DemoInputsRecJ2Prs], Y
+    BNE ReturnFromRecordDemoInputs
+IncJ2PrsAddr:
+    LDY #$00
+    LDA <DemoInputsRecJ2Prs
+    CLC
+    ADC #$02
+    STA <DemoInputsRecJ2Prs
+    LDA <(DemoInputsRecJ2Prs + 1)
+    ADC #$00
+    STA <(DemoInputsRecJ2Prs + 1)
+    LDA <Joypad2Pressed
+    STA [DemoInputsRecJ2Prs], Y
+    LDA <DemoInputsRecJ2Prs
+    CMP #$FE
+    BNE ReturnFromRecordDemoInputs
+    LDA <(DemoInputsRecJ2Prs + 1)
+    CMP #$67
+    BNE ReturnFromRecordDemoInputs
+    LDA #$FF
+    STA [DemoInputsRecJ2Prs], Y
+    JMP RecordDemoInputsBufferOverflow
+
+ReturnFromRecordDemoInputs:
+    RTS
+RecordDemoInputsBufferOverflow:
+    LDA #$08
+    JSR EnqueueSfx
+InfiniteLoop:
+    JSR WaitNmiAndReadInputs
+    JMP InfiniteLoop
 
     .db $48 ; #FC49
     .db $21 ; #FC4A
@@ -9737,11 +9730,11 @@ ClearPageByteY:
     CPX #$07
     BNE ClearPage                       ; Finish on page $07; All bytes in $0000 - $0800 became zeroes.
 
-    LDA #$88                            ; A = #$88, X = #$07
-L7_FE3A:
-    STA <$DC, X                         ; <$DC meaning isn't clear yet, but we write 8 bytes of #$88 to it ($DC - $F4 (exclusive)).
-    DEX ; #FE3C
-    BPL L7_FE3A ; #FE3D
+    LDA #SFX_Q_NULL                     ; X == SFX_Q_LEN - 1, which is equal to 7.
+SfxQueueCleanupLoop:
+    STA <SfxQueue, X
+    DEX
+    BPL SfxQueueCleanupLoop
 
     LDA #%00011110                      ; Show background and sprites everywhere.
     STA <PpuMaskVal                     ; Store as ppu mask value.
@@ -9788,34 +9781,36 @@ L7_FE3A:
     LDA #%10010000                      ; Background pattern table address $1000; Enable NMI.
     STA <PpuCtrlVal
 
+
 L7_FE8D:
     LDX #$FF
     TXS                                 ; Set up stack pointer cause it might be all messed up. Or is it?
 
 ; Wait for NMI to finish. Code is very convoluted.
-L7_FE90:                                                                    ; See L7_C0AA
-    LDX #$00 ; #FE90
-    STX <$90                            ; <$90 = X = 0
+L7_FE90:
+    LDX #$00
+    STX <NmiFinishedFlag                ; NmiFinishedFlag = X = 0
     LDY #$04                            ; Y = #$04
 L7_FE96:
-    LDA <$80, X ; #FE96
-    CMP #$04 ; #FE98
+    LDA <$80, X
+    CMP #$04
     BCS L7_FEA6                         ; A >= 4
-    INX ; #FE9C
-    INX ; #FE9D
-    INX ; #FE9E
-    INX ; #FE9F
-    DEY ; #FEA0
-    BNE L7_FE96 ; #FEA1
-    JMP L7_FE90 ; #FEA3
+    INX
+    INX
+    INX
+    INX
+    DEY
+    BNE L7_FE96
+    JMP L7_FE90
 L7_FEA6:
-    LDA <$90 ; #FEA6
-    BNE L7_FE90 ; #FEA8
+    LDA <NmiFinishedFlag
+    BNE L7_FE90
 
-; Now <$80[X] >= #4, whatever that means.
+; Now <$80[X] >= #4, whatever that means. It's the minimal X with this property.
     DEY
     TYA
     EOR #$03                            ; A = (Y - 1) ^ 3, which is basically (4 - Y), but shorter. Or same as (X >> 2).
+
     STA <$91                            ; Store that A into <$91. This is clearly an index that will later be transformed back to offset.
     LDY <$80, X                         ; Y = <$80[X]
     LDA #$02
@@ -9831,6 +9826,7 @@ L7_FEC5:
     LDA <$82, X                         ; If Y != 8 then <$82 has old stack pointer that needs to be restores.
     TAX
     TXS
+
     LDA <$91
     BNE L7_FED0
     JSR ReadJoypadsInput                ; <$80[oldX] == 0 means we need to read inputs? Ok.
@@ -9875,6 +9871,7 @@ ShiftAccTwice:
     TAX                                 ; Copy to X.
     RTS                                 ; Return.
 
+
 WaitXFrames:
     JSR WaitNmiAndReadInputs
     DEX
@@ -9889,7 +9886,7 @@ WaitNmiAndReadInputs:
     PHA                                 ; Push X to the stack.
     TYA
     PHA                                 ; Push Y to the stack.
-    JSR L7_FEF7                         ; X = A = (<$91 << 2), some offset, multiple of 4.
+    JSR L7_FEF7                         ; X = A = (<$91 << 2), some offset, multiple of 4 + something else.
     LDA <$93 ; #FF0F
     STA <$81, X ; #FF11
     LDA #$01 ; #FF13
@@ -9968,21 +9965,23 @@ L7_FF75:
     STA $FFF0
     LSR A
     STA $FFF0
-L7_FF8A:
-    LDX <$DB                            ; #0 <= X < #8
-    LDA <$DC, X                         ; Must contain #$88 for some reason.
-    CMP #$88
-    BEQ L7_FFA4                         ; Skip initialization if value is already #$88.
-    PHA                                 ; Preserve current value of <$DC[X]
-    LDA #$88
-    STA <$DC, X                         ; <$DC[X] = #$88
+
+SfxQueuePollLoop:
+    LDX <SfxQueueReadIdx
+    LDA <SfxQueue, X
+    CMP #SFX_Q_NULL
+    BEQ L7_FFA4                         ; Finish if value is already #SFX_Q_NULL.
+    PHA                                 ; Preserve current value of SfxQueue[X]
+    LDA #SFX_Q_NULL
+    STA <SfxQueue, X                    ; SfxQueue[X] = SFX_Q_NULL
     INX
     TXA
-    AND #$07
-    STA <$DB                            ; <$DB = (X + 1) % 8
+    AND #SFX_Q_IDX_MASK
+    STA <SfxQueueReadIdx                ; SfxQueueReadIdx = (X + 1) % SFX_Q_LEN
     PLA                                 ; Read preserved value of A, it'll be a parameter for subroutine $8003 in bank 3.
-    JSR $8003 ; #FF9E
-    JMP L7_FF8A ; #FFA1
+    JSR $8003
+    JMP SfxQueuePollLoop
+
 L7_FFA4:
     JSR $8000                           ; Call subroutine $8000 in bank 3.
     LDA #$00                            ; A = #0

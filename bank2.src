@@ -5393,7 +5393,7 @@ L2_A045:
 L2_A04D:
     STX (OAM + 3)                       ; Put it to the X position of cursor sprite.
     LDA #$27
-    JSR L7_F379                         ; Play sound effect.
+    JSR EnqueueSfx                      ; Play sound effect.
     JMP L2_A022
 
 L2_A058:        ; Start tapped.
@@ -11843,6 +11843,8 @@ L2_A6B9:
     .db $00 ; #BADD
     .db $00 ; #BADE
     .db $00 ; #BADF
+
+L2_BAE0:
     .db $00 ; #BAE0
     .db $64 ; #BAE1
     .db $66 ; #BAE2

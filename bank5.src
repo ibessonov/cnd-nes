@@ -14854,6 +14854,8 @@ L5_81D9:
     .db $00 ; #BADD
     .db $00 ; #BADE
     .db $00 ; #BADF
+
+L5_BAE0:
     .db $00 ; #BAE0
     .db $01 ; #BAE1
     .db $10 ; #BAE2

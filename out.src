@@ -3,6 +3,8 @@
     .inesmir 0 ; Background mirroring
     .inesmap 1 ; Mapper
 
+; Hardware constants.
+
 ENTRY_POINT = $FFFA
 
 PPU_CTRL_REG            = $2000
@@ -26,6 +28,8 @@ JOYPAD2_REG             = $4017
 
 PALETTES_VRAM_ADDR      = $3F00
 
+; User defined memory addresses.
+
 OAM                     = $0200         ; Object Attribute Memory.
 
 Palettes                = $0300
@@ -37,6 +41,7 @@ SpritePaletteBk         = $0330
 
 VRamBufferBase          = $0360
 
+; User defined constants.
 
 BUTTON_A                = %10000000
 BUTTON_B                = %01000000
@@ -68,7 +73,19 @@ ZONE_H                  = $08
 ZONE_I                  = $09
 ZONE_J                  = $0A
 
+ZONE_MAP_1              = $0B
+ZONE_MAP_2              = $0C
+
+; ZONE_?                  = $0D
+; ZONE_?                  = $0E
+
 SECOND                  = 60            ; Frames.
+
+SFX_Q_NULL              = $88           ; No sound effect.
+SFX_Q_LEN               = $08
+SFX_Q_IDX_MASK          = SFX_Q_LEN - 1 ; $07
+
+; Variables.
 
 Joypad                  = $14
 Joypad1Tmp              = $14
@@ -84,6 +101,9 @@ VRamBuffer1Dirty        = $19           ; Boolean: 0 / x
 NextChrBank0            = $1A
 NextChrBank1            = $1B
 
+VRamBuffer3Dirty        = $1C           ; Boolean: 0 / x
+VRamBuffer2Dirty        = $1D           ; Boolean: 0 / x
+
 CurrentZone             = $37           ;TODO currently completed zone?
 BeatenZones             = $38           ; Word, bit mask.
 
@@ -93,10 +113,19 @@ PalettesAnimFrame       = $3F
 
 TwoPlayersMode          = $50           ; Boolean: 0 / 1
 
+DemoInputsRecArray      = $B0
+DemoInputsRecJ1Tap      = $B0
+DemoInputsRecJ2Tap      = $B2
+DemoInputsRecJ1Prs      = $B4
+DemoInputsRecJ2Prs      = $B6
+
+NmiFinishedFlag         = $90           ; Boolean 0 / X.
+
 OamUsedSize             = $97
 
-; $DB has index 0 <= X < 8. Or $DA, it's not clear.
-; Next 8 bytes at $DC are interpreted in some specific way and have something to do with constant #$88.
+SfxQueueWriteIdx        = $DA
+SfxQueueReadIdx         = $DB
+SfxQueue                = $DC
 
 DisplayDisabled         = $F0           ; Boolean: 0 / 1 ?
 CurPrgBank              = $F1
