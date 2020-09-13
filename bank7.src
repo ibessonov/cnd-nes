@@ -170,7 +170,7 @@ NmiReturn:
 
 L7_C115:
     LDX #$00                            ; Fall to subsequent code with param X = 0.
-    STX <$19                            ; <$19 = 0
+    STX <VRamBuffer1Dirty               ; VRamBuffer1Dirty = 0
 
 ; Write some arbitrary data to VRAM.
 ; X - param (#$80, #$58, #$00)
@@ -812,9 +812,9 @@ L7_C5D3:
 
     LDY #$1D ; #C5DC
 L7_C5DE:
-    LDA $C73F, Y ; #C5DE
+    LDA L7_C73F, Y ; #C5DE
     STA $05A0, Y ; #C5E1
-    LDA $C75D, Y ; #C5E4
+    LDA L7_C75D, Y ; #C5E4
     STA $05D0, Y ; #C5E7
     DEY ; #C5EA
     BPL L7_C5DE ; #C5EB
@@ -830,10 +830,10 @@ L7_C5DE:
     STA <$31 ; #C5FE
     JMP L7_C60E ; #C600
 L7_C603:
-    LDA #$0B ; #C603
+    LDA #ZONE_MAP_1
     STA <$31 ; #C605
     JSR L2_9000                         ; L2, right?
-    LDA #$00 ; #C60A
+    LDA #ZONE_0
     STA <$31 ; #C60C
 L7_C60E:
     JSR L7_C63B ; #C60E
@@ -1015,6 +1015,7 @@ StatusSprites:
 
 
 ; 30 bytes
+L7_C73F:
     .db $0D ; #C73F
     .db $B4 ; #C740
     .db $8C ; #C741
@@ -1047,6 +1048,7 @@ StatusSprites:
     .db $00 ; #C75C
 
 ; 30 bytes
+L7_C75D:
     .db $0D ; #C75D
     .db $B4 ; #C75E
     .db $8D ; #C75F
@@ -1139,7 +1141,7 @@ L7_C7DA:
     STA <$31 ; #C7E0
     LDA #$02 ; #C7E2
     JSR SetFirstPrgBank ; #C7E4
-    JSR $8B00 ; #C7E7
+    JSR L2_8B00 ; #C7E7
     JMP L7_C60E ; #C7EA
 L7_C7ED:
     JSR L7_C879 ; #C7ED
@@ -1240,8 +1242,8 @@ L7_C88E:
     ORA BeatenZonesBits, Y
     STA <BeatenZones, X
 
-    LDA #$0D ; #C8A4
-    STA <$31 ; #C8A6
+    LDA #ZONE_CLR
+    STA <$31
     JSR L7_C6B5 ; #C8A8
     LDA #BANK_2
     JSR SetFirstPrgBank
@@ -1260,6 +1262,7 @@ ZoneJCompleted:
     STA <$4F ; #C8C6
     LDA #$08 ; #C8C8
     JMP L7_F377 ; #C8CA
+
 L7_C8CD:
     LDX #$00 ; #C8CD
 L7_C8CF:
@@ -1367,8 +1370,8 @@ L7_C957:
     JMP L7_D05E ; #C965
 L7_C968:
     JSR L7_D559 ; #C968
-    LDA <$14, X ; #C96B
-    AND #BUTTON_A ; #C96D
+    LDA <JoypadTapped, X
+    AND #BUTTON_A
     BEQ L7_C9C3 ; #C96F
     LDA $0420, X ; #C971
     BEQ L7_C9BA ; #C974
@@ -1379,18 +1382,18 @@ L7_C968:
     LDA $03A0, Y ; #C97F
     CMP #$24 ; #C982
     BCC L7_C98C ; #C984
-    LDA <$16, X ; #C986
-    AND #$04 ; #C988
+    LDA <JoypadPressed, X
+    AND #BUTTON_DOWN
     BNE L7_C9BA ; #C98A
 L7_C98C:
     LDA $03A0, Y ; #C98C
     CMP #$26 ; #C98F
     BNE L7_C9A9 ; #C991
-    LDY L7_D69D, X ; #C993
-    LDA OAM, Y ; #C996
-    CMP #$F8 ; #C999
+    LDY OamPStatusOffArray, X
+    LDA OAM, Y
+    CMP #$F8
     BNE L7_C9A9 ; #C99B
-    LDA #$9E ; #C99D
+    LDA #$9E                            ; Jumping?
     STA $0550, X ; #C99F
     LDA #$04 ; #C9A2
     STA $0560, X ; #C9A4
@@ -1404,13 +1407,14 @@ L7_C9B3:
     LDA #$01 ; #C9B3
     STA <$54, X ; #C9B5
     JMP L7_CBAC ; #C9B7
+
 L7_C9BA:
     LDA <$10 ; #C9BA
     CMP #$02 ; #C9BC
     BNE L7_CA05 ; #C9BE
     JMP L7_CC9F ; #C9C0
 L7_C9C3:
-    LDA <Joypad1Tapped, X
+    LDA <JoypadTapped, X
     AND #BUTTON_B ; #C9C5
     BEQ L7_C9FF ; #C9C7
     LDA <$56, X ; #C9C9
@@ -1424,8 +1428,8 @@ L7_C9C3:
     STA $0410, X ; #C9DC
     LDA #$04 ; #C9DF
     STA <$54, X ; #C9E1
-    LDA <$16, X ; #C9E3
-    AND #$08 ; #C9E5
+    LDA <JoypadPressed, X
+    AND #BUTTON_UP
     BNE L7_C9F2 ; #C9E7
     LDA $0350, X ; #C9E9
     STA $0420, X ; #C9EC
@@ -1437,8 +1441,8 @@ L7_C9F2:
     STA $0560, X ; #C9F9
     JMP L7_CD50 ; #C9FC
 L7_C9FF:
-    LDA <$16, X ; #C9FF
-    AND #$04 ; #CA01
+    LDA <JoypadPressed, X
+    AND #BUTTON_DOWN
     BEQ L7_CA34 ; #CA03
 L7_CA05:
     LDA $0348, X ; #CA05
@@ -1464,7 +1468,7 @@ L7_CA2E:
     JSR L7_CF08 ; #CA2E
     JMP L7_CA25 ; #CA31
 L7_CA34:
-    LDA <Joypad1Pressed, X
+    LDA <JoypadPressed, X
     AND #(BUTTON_LEFT | BUTTON_RIGHT)
     BNE L7_CAA2 ; #CA38
     LDA <$58, X ; #CA3A
@@ -1576,7 +1580,7 @@ L7_CAFF:
     BNE L7_CB73 ; #CB08
     JMP L7_D3E7 ; #CB0A
 L7_CB0D:
-    LDA <Joypad1Tapped, X
+    LDA <JoypadTapped, X
     AND #BUTTON_B ; #CB0F
     BEQ L7_CB8A ; #CB11
     LDA <$10 ; #CB13
@@ -1612,13 +1616,13 @@ L7_CB27:
     STA $04A0, Y ; #CB54
     STX <$00 ; #CB57
     LDX <$10 ; #CB59
-    LDA $CB9C, X ; #CB5B
+    LDA L7_CB9C, X ; #CB5B
     STA $0420, Y ; #CB5E
     LDX <$00 ; #CB61
     LDA <$54, X ; #CB63
     BNE L7_CB8B ; #CB65
-    LDA <$16, X ; #CB67
-    AND #$02 ; #CB69
+    LDA <JoypadPressed, X
+    AND #BUTTON_LEFT
     LDY <$56, X ; #CB6B
     JSR L7_D460 ; #CB6D
     JSR L7_E817 ; #CB70
@@ -1641,6 +1645,7 @@ L7_CB8B:
     LDA #$00 ; #CB94
     STA $0430, X ; #CB96
     STA $0410, X ; #CB99
+L7_CB9C:
     JSR L7_D3E7 ; #CB9C
     JMP L7_D40B ; #CB9F
 
@@ -1668,7 +1673,7 @@ L7_CBB3:
     BMI L7_CBCC ; #CBB6
     LDA #$00 ; #CBB8
     STA <$5A, X ; #CBBA
-    LDA <Joypad1Pressed, X
+    LDA <JoypadPressed, X
     AND #BUTTON_A ; #CBBE
     BNE L7_CBCC ; #CBC0
     LDA $0560, X ; #CBC2
@@ -1754,7 +1759,7 @@ L7_CC52:
     STA $0430, X ; #CC5A
 L7_CC5D:
     JSR L7_D40B ; #CC5D
-    LDA <$14, X ; #CC60
+    LDA <JoypadTapped, X
     AND #BUTTON_B ; #CC62
     BEQ L7_CC95 ; #CC64
     LDA <$56, X ; #CC66
@@ -1768,8 +1773,8 @@ L7_CC5D:
     STA $0410, X ; #CC79
     LDA #$04 ; #CC7C
     STA <$54, X ; #CC7E
-    LDA <$16, X ; #CC80
-    AND #$08 ; #CC82
+    LDA <JoypadPressed, X
+    AND #BUTTON_UP
     BNE L7_CC8D ; #CC84
     LDA $0350, X ; #CC86
     STA $0420, X ; #CC89
@@ -1779,8 +1784,8 @@ L7_CC8D:
     BMI L7_CC9B ; #CC90
     JMP L7_F31D ; #CC92
 L7_CC95:
-    LDA <$16, X ; #CC95
-    AND #$03 ; #CC97
+    LDA <JoypadPressed, X
+    AND #(BUTTON_LEFT | BUTTON_RIGHT)
     BNE L7_CC9C ; #CC99
 L7_CC9B:
     RTS ; #CC9B
@@ -1857,7 +1862,7 @@ L7_CD24:
     LDY <$56, X ; #CD2B
     STX <$01 ; #CD2D
     LDX $03A0, Y ; #CD2F
-    LDA $D65C, X ; #CD32
+    LDA L7_D65C, X ; #CD32              ?????
     STA <$00 ; #CD35
     LDX <$01 ; #CD37
     LDA $0490, Y ; #CD39
@@ -2041,14 +2046,14 @@ L7_CE85:
     ASL A ; #CEAD
     PHA ; #CEAE
     AND #$E0 ; #CEAF
-    ORA $CED0, X ; #CEB1
+    ORA L7_CED0, X ; #CEB1
     STA $0510, Y ; #CEB4
     PLA ; #CEB7
     ASL A ; #CEB8
     ASL A ; #CEB9
     ASL A ; #CEBA
     AND #$E0 ; #CEBB
-    ORA $CED4, X ; #CEBD
+    ORA L7_CED4, X ; #CEBD
     STA $04F0, Y ; #CEC0
     LDA #$01 ; #CEC3
     STA $0520, Y ; #CEC5
@@ -2057,14 +2062,19 @@ L7_CE85:
     LDX <$00 ; #CECD
 L7_CECF:
     RTS ; #CECF
-    PHP ; #CED0
-    PHP ; #CED1
-    CLC ; #CED2
-    CLC ; #CED3
-    PHP ; #CED4
-    CLC ; #CED5
-    PHP ; #CED6
-    CLC ; #CED7
+
+L7_CED0:
+    .db $08 ; #CED0
+    .db $08 ; #CED1
+    .db $18 ; #CED2
+    .db $18 ; #CED3
+
+L7_CED4:
+    .db $08 ; #CED4
+    .db $18 ; #CED5
+    .db $08 ; #CED6
+    .db $18 ; #CED7
+
 L7_CED8:
     LDA $0420, X ; #CED8
     BEQ L7_CEF5 ; #CEDB
@@ -2092,7 +2102,7 @@ L7_CF08:
     LDY <$56, X ; #CF08
     STX <$01 ; #CF0A
     LDX $03A0, Y ; #CF0C
-    LDA $D665, X ; #CF0F
+    LDA L7_D665, X ; #CF0F
     STA <$00 ; #CF12
     LDX <$01 ; #CF14
     LDA $0510, X ; #CF16
@@ -2113,7 +2123,7 @@ L7_CF31:
     LDY <$56, X ; #CF31
     STX <$01 ; #CF33
     LDX $03A0, Y ; #CF35
-    LDA $D65C, X ; #CF38
+    LDA L7_D65C, X ; #CF38                ?????
     STA <$00 ; #CF3B
     LDX <$01 ; #CF3D
     LDA $0510, X ; #CF3F
@@ -2232,38 +2242,50 @@ L7_D015:
     STA $0430, X ; #D025
 L7_D028:
     LDA $0500, X ; #D028
-    CMP $D05A, X ; #D02B
+    CMP L7_D05A, X ; #D02B
     BNE L7_D03C ; #D02E
     LDA $04F0, X ; #D030
-    CMP $D056, X ; #D033
+    CMP L7_D056, X ; #D033
     BEQ L7_D04C ; #D036
     BCC L7_D04C ; #D038
     BCS L7_D055 ; #D03A
 L7_D03C:
     LDA $0500, X ; #D03C
-    CMP $D05C, X ; #D03F
+    CMP L7_D05C, X ; #D03F
     BNE L7_D055 ; #D042
     LDA $04F0, X ; #D044
-    CMP $D058, X ; #D047
+    CMP L7_D058, X ; #D047
     BCC L7_D055 ; #D04A
 L7_D04C:
-    LDA <$14, X ; #D04C
+    LDA <JoypadTapped, X
     AND #BUTTON_A ; #D04E
     BEQ L7_D055 ; #D050
     JMP L7_C9A9 ; #D052
 L7_D055:
     RTS ; #D055
-    PLP ; #D056
-    CLC ; #D057
-    EOR [$41], Y ; #D058
+
+
+L7_D056:
+    .db $28 ; #D056
+    .db $18 ; #D057
+
+L7_D058:
+    .db $51 ; #D058
+    .db $41 ; #D059
+
+L7_D05A:
     .db $02 ; #D05A
     .db $02 ; #D05B
+
+L7_D05C:
     .db $04 ; #D05C
     .db $04 ; #D05D
+
+
 L7_D05E:
-    LDY $D131, X ; #D05E
-    LDA $01F8, Y ; #D061
-    CMP #$F8 ; #D064
+    LDY Heart3XPosArray, X
+    LDA (OAM - 8), Y                ; Heart 1.
+    CMP #$F8
     BNE L7_D07A ; #D066
     LDA $0560, X ; #D068
     BPL L7_D073 ; #D06B
@@ -2274,25 +2296,28 @@ L7_D073:
 L7_D076:
     JSR L7_F2FB ; #D076
     RTS ; #D079
+
 L7_D07A:
     LDA <$5E, X ; #D07A
     BNE L7_D0F4 ; #D07C
-    LDA #$02 ; #D07E
-    STA <$00 ; #D080
-    LDY $D131, X ; #D082
+
+    LDA #$02
+    STA <$00
+    LDY Heart3XPosArray, X
 L7_D085:
-    LDA #$F8 ; #D085
-    CMP OAM, Y ; #D087
-    BNE L7_D094 ; #D08A
-    DEY ; #D08C
-    DEY ; #D08D
-    DEY ; #D08E
-    DEY ; #D08F
-    DEC <$00 ; #D090
-    BPL L7_D085 ; #D092
+    LDA #$F8
+    CMP OAM, Y
+    BNE L7_D094
+    DEY
+    DEY
+    DEY
+    DEY
+    DEC <$00
+    BPL L7_D085
+
 L7_D094:
-    STA OAM, Y ; #D094
-    LDA <$00 ; #D097
+    STA OAM, Y
+    LDA <$00                            ; A - number of lives left for player X.
     BNE L7_D0BC ; #D099
     LDA <$56, X ; #D09B
     BEQ L7_D0BC ; #D09D
@@ -2320,9 +2345,9 @@ L7_D0BC:
     LDA #$00 ; #D0CB
     STA $0410, X ; #D0CD
     STA $0430, X ; #D0D0
-    LDY $D131, X ; #D0D3
-    LDA $01F8, Y ; #D0D6
-    CMP #$F8 ; #D0D9
+    LDY Heart3XPosArray, X
+    LDA (OAM - 8), Y
+    CMP #$F8
     BNE L7_D0EA ; #D0DB
     LDA #$9E ; #D0DD
     STA $0550, X ; #D0DF
@@ -2369,8 +2394,11 @@ L7_D127:
 L7_D130:
     RTS ; #D130
 
-    .db $10 ; #D131
-    .db $24 ; #D132
+
+Heart3XPosArray:
+    .db $10                             ; Player 1.
+    .db $24                             ; Player 2.
+
 
 L7_D133:                                ; I'll assume that this function is called when player X (0 or 1) is dead.
     LDA #$0C ; #D133
@@ -2385,7 +2413,7 @@ L7_D133:                                ; I'll assume that this function is call
     BEQ L7_D15B                         ; Jump if we're in two players mode and other player is already dead.
     LDA #$04                            ; 5 times
     STA <$00                            ; <$00 = 4
-    LDY $D6A1, X                        ; #$00 for 0, #$14 for 1.
+    LDY L7_D6A1, X                      ; #$00 for 0, #$14 for 1.
     LDA #$F8
 RemovePlayerStatusLoop:
     STA OAM, Y
@@ -2398,20 +2426,20 @@ RemovePlayerStatusLoop:
     RTS
 
 L7_D15B:                                ; All players are dead.
-    LDA #$04 ; #D15B
+    LDA #$04
     STA <OamUsedSize                    ; Can't be 0.
     JSR HideSprites
-    LDA #$05
+    LDA #BANK_5
     JSR SetFirstPrgBank                 ; Choose bank 5
     JSR $8000                           ; and call its main routine.
-    LDA #$04 ; #D16A
+    LDA #$04
     STA <OamUsedSize                    ; Can't be 0. Or can it?
     LDA <$31
     PHA                                 ; Push old value of <$31.
-    LDA #$0E
+    LDA #ZONE_CNT
     STA <$31                            ; <$31 = #$0E
     JSR L7_E096 ; #D175
-    LDA #$02 ; #D178
+    LDA #BANK_2
     JSR SetFirstPrgBank ; #D17A
     JSR L2_A400                         ; This must show continue screen.
     PLA
@@ -2469,7 +2497,7 @@ L7_D1C2:                                ; ???
     JMP L7_C60E ; #D1D4
 
 ResetOnNoContinuesLeft:
-    JMP RESET ; #D1D7
+    JMP RESET
 
 
 ; Y positions of continue screen menu items.
@@ -2497,7 +2525,7 @@ L7_D1F1:
 L7_D1FB:
     LDA <$5E, X ; #D1FB
     BNE L7_D231 ; #D1FD
-    LDY $D69F, X ; #D1FF
+    LDY L7_D69F, X ; #D1FF
     LDA $05A0, Y ; #D202
     ORA $059E, Y ; #D205
     CMP #$80 ; #D208
@@ -2530,13 +2558,13 @@ L7_D231:
     INC <$5E, X ; #D237
     RTS ; #D239
 L7_D23A:
-    LDY $D131, X ; #D23A
-    JSR L7_D2E2 ; #D23D
+    LDY Heart3XPosArray, X
+    JSR ShowHearts
     LDA #$80 ; #D240
     STA $04D0, X ; #D242
     LDA #$00 ; #D245
     STA <$54, X ; #D247
-    LDA <$50 ; #D249
+    LDA <TwoPlayersMode
     BEQ L7_D272 ; #D24B
     TXA ; #D24D
     EOR #$01 ; #D24E
@@ -2553,9 +2581,9 @@ L7_D23A:
 L7_D266:
     LDA #$80 ; #D266
     STA $04D0, Y ; #D268
-    LDA $D131, Y ; #D26B
-    TAY ; #D26E
-    JSR L7_D2E2 ; #D26F
+    LDA Heart3XPosArray, Y
+    TAY
+    JSR ShowHearts
 L7_D272:
     LDA <$6E ; #D272
     BEQ L7_D280 ; #D274
@@ -2598,7 +2626,7 @@ L7_D2A7:
     LDY <$F2 ; #D2B1
     LDA $035C, X ; #D2B3
     CLC ; #D2B6
-    ADC $D2F4, Y ; #D2B7
+    ADC L7_D2F4, Y ; #D2B7
     STA $0420, X ; #D2BA
     LDA #$00 ; #D2BD
     STA $0430, X ; #D2BF
@@ -2616,21 +2644,26 @@ L7_D2A7:
     LDA #$02 ; #D2DD
     STA <$62, X ; #D2DF
     RTS ; #D2E1
-L7_D2E2:
-    LDA #$02 ; #D2E2
-    STA <$00 ; #D2E4
-    LDA #$18 ; #D2E6
-L7_D2E8:
-    STA OAM, Y ; #D2E8
-    DEY ; #D2EB
-    DEY ; #D2EC
-    DEY ; #D2ED
-    DEY ; #D2EE
-    DEC <$00 ; #D2EF
-    BPL L7_D2E8 ; #D2F1
-L7_D2F3:
-    RTS ; #D2F3
 
+
+; X - index of the player.
+; Y - OAM offset of last heart.
+ShowHearts:
+    LDA #$02                            ; 3 hearts.
+    STA <$00
+    LDA #$18                            ; Hearts Y position.
+ShowHeartsLoop:
+    STA OAM, Y
+    DEY
+    DEY
+    DEY
+    DEY
+    DEC <$00
+    BPL ShowHeartsLoop
+L7_D2F3:
+    RTS
+
+L7_D2F4:
     .db $00 ; #D2F4
     .db $00 ; #D2F5
     .db $01 ; #D2F6
@@ -2657,7 +2690,7 @@ L7_D304:
     BEQ L7_D2F3 ; #D30F
     LDA #$00 ; #D311
     STA <$5E, X ; #D313
-    LDY $D131, X                        ; #$10 or #$24 depending on X.
+    LDY Heart3XPosArray, X              ; #$10 or #$24 depending on X.
     LDA #$F8 ; #D318
     STA (OAM - 0), Y
     STA (OAM - 4), Y                    ; Remove last 2 hearts of the players status. Interesting.
@@ -2985,7 +3018,7 @@ L7_D56F:
     LDA [$00], Y ; #D58A
     LDY #$07 ; #D58C
 L7_D58E:
-    CMP $D5FC, Y ; #D58E
+    CMP L7_D5FC, Y ; #D58E
     BEQ L7_D598 ; #D591
     DEY ; #D593
     BPL L7_D58E ; #D594
@@ -3050,11 +3083,17 @@ L7_D5F6:
     STA <$52, X ; #D5F8
     SEC ; #D5FA
     RTS ; #D5FB
-    PHP ; #D5FC
-    ORA #$0A ; #D5FD
+
+L7_D5FC:
+    .db $08 ; #D5FC
+    .db $09 ; #D5FD
+    .db $0A ; #D5FE
     .db $0B ; #D5FF
     .db $0C ; #D600
-    ORA $0F0E ; #D601
+    .db $0D ; #D601
+    .db $0E ; #D602
+    .db $0F ; #D603
+
 L7_D604:
     LDY <$56, X ; #D604
     CPY #$82 ; #D606
@@ -3114,6 +3153,7 @@ L7_D657:
     .db $02 ; #D659
     .db $0E ; #D65A
     .db $03 ; #D65B
+L7_D65C:
     .db $0F ; #D65C
     .db $04 ; #D65D
     .db $10 ; #D65E
@@ -3123,6 +3163,8 @@ L7_D657:
     .db $12 ; #D662
     .db $07 ; #D663
     .db $13 ; #D664
+
+L7_D665:
     .db $08 ; #D665
     .db $14 ; #D666
     .db $09 ; #D667
@@ -3183,12 +3225,15 @@ BeatenZonesBits:
     .db $02 ; #D69B
     .db $04 ; #D69C
 
-L7_D69D:
+OamPStatusOffArray:
     .db $04 ; #D69D
     .db $18 ; #D69E
+
+L7_D69F:
     .db $16 ; #D69F
     .db $46 ; #D6A0
 
+L7_D6A1:
     .db $00 ; #D6A1
     .db $14 ; #D6A2
 
@@ -3882,7 +3927,7 @@ L7_DB50:
     TAX ; #DB60
     LDA <$22 ; #DB61
     CLC ; #DB63
-    ADC $DB6D, X ; #DB64
+    ADC L7_DB6D, X ; #DB64
     STA <$23 ; #DB67
 L7_DB69:
     SEC ; #DB69
@@ -3890,8 +3935,11 @@ L7_DB69:
 L7_DB6B:
     CLC ; #DB6B
     RTS ; #DB6C
+
+L7_DB6D:
     .db $FF ; #DB6D
     .db $01 ; #DB6E
+
 L7_DB6F:
     LDA <$2B ; #DB6F
     AND #$0C ; #DB71
@@ -3962,7 +4010,7 @@ L7_DBC0:
     STA <$06 ; #DBD4
     PLA ; #DBD6
     CLC ; #DBD7
-    ADC $DD0A, X ; #DBD8
+    ADC L7_DD0A, X ; #DBD8
     STA <$25 ; #DBDB
     AND #$80 ; #DBDD
     CMP <$06 ; #DBDF
@@ -3971,7 +4019,7 @@ L7_DBC0:
 L7_DBE4:
     LDA <$23 ; #DBE4
     CLC ; #DBE6
-    ADC $DD0E, X ; #DBE7
+    ADC L7_DD0E, X ; #DBE7
     STA <$23 ; #DBEA
 L7_DBEC:
     LDY #$00 ; #DBEC
@@ -3997,7 +4045,7 @@ L7_DBEE:
     ORA #$C0 ; #DC07
     STA $0375, Y ; #DC09
     PLA ; #DC0C
-    ORA $E05B, X ; #DC0D
+    ORA L7_E05B, X ; #DC0D
     STA $0361, Y ; #DC10
     CLC ; #DC13
     ADC #$20 ; #DC14
@@ -4012,7 +4060,7 @@ L7_DBEE:
     ROL A ; #DC27
     ROL A ; #DC28
     AND #$04                            ; Preserve nametable parity.
-    ORA $E063, X ; #DC2B
+    ORA L7_E063, X ; #DC2B
     STA $0360, Y ; #DC2E
     STA $0365, Y ; #DC31
     STA $036A, Y ; #DC34
@@ -4034,7 +4082,7 @@ L7_DBEE:
     JSR L7_E06B ; #DC59
     JSR L7_DF8A ; #DC5C
     LDY <$06 ; #DC5F
-    LDA $035E, Y ; #DC61
+    LDA ($0360 - 2), Y ; #DC61
     AND #$02 ; #DC64
     TAX ; #DC66
 L7_DC67:
@@ -4080,10 +4128,10 @@ L7_DC96:
     ORA <$24 ; #DCA5
     TAX ; #DCA7
     LDA <$10 ; #DCA8
-    AND $DD16, Y ; #DCAA
+    AND L7_DD16, Y ; #DCAA
     STA <$10 ; #DCAD
     LDA $0780, X ; #DCAF
-    AND $DD18, Y ; #DCB2
+    AND L7_DD18, Y ; #DCB2
     ORA <$10 ; #DCB5
     STA $0780, X ; #DCB7
     LDY <$06 ; #DCBA
@@ -4109,14 +4157,14 @@ L7_DCD6:
     TAX ; #DCDD
     LDA <$25 ; #DCDE
     CLC ; #DCE0
-    ADC $DD12, X ; #DCE1
+    ADC L7_DD12, X ; #DCE1
     STA <$25 ; #DCE4
     AND #$7F ; #DCE6
-    CMP $DD13, X ; #DCE8
+    CMP (L7_DD12 + 1), X ; #DCE8
     BNE L7_DCF5 ; #DCEB
     LDA <$23 ; #DCED
     CLC ; #DCEF
-    ADC $DD12, X ; #DCF0
+    ADC L7_DD12, X ; #DCF0
     STA <$23 ; #DCF3
 L7_DCF5:
     DEC <$05 ; #DCF5
@@ -4127,25 +4175,34 @@ L7_DCFC:
     BEQ L7_DD03 ; #DCFE
     JMP L7_C115 ; #DD00
 L7_DD03:
-    INC <$19 ; #DD03
+    INC <VRamBuffer1Dirty
     LDA <ScrollX ; #DD05
     STA <$28 ; #DD07
     RTS ; #DD09
 
+L7_DD0A:
     .db $91 ; #DD0A
     .db $01 ; #DD0B
     .db $6F ; #DD0C
     .db $FF ; #DD0D
+
+L7_DD0E:
     .db $02 ; #DD0E
     .db $01 ; #DD0F
     .db $FE ; #DD10
     .db $FF ; #DD11
+
+L7_DD12:
     .db $01 ; #DD12
     .db $00 ; #DD13
     .db $FF ; #DD14
     .db $7F ; #DD15
+
+L7_DD16:
     .db $33 ; #DD16
     .db $CC ; #DD17
+
+L7_DD18:
     .db $CC ; #DD18
     .db $33 ; #DD19
 
@@ -4173,11 +4230,11 @@ L7_DD30:
     TAX ; #DD38
     LDA <$2A ; #DD39
     CLC ; #DD3B
-    ADC $DF62, X ; #DD3C
+    ADC L7_DF62, X ; #DD3C
     CMP #$1E ; #DD3F
     BCC L7_DD4E ; #DD41
     CLC ; #DD43
-    ADC $DF64, X ; #DD44
+    ADC (L7_DF62 + 2), X ; #DD44
     AND #$1F ; #DD47
     PHA ; #DD49
     JSR L7_DE8A ; #DD4A
@@ -4226,7 +4283,7 @@ L7_DD6B:
     AND #$01 ; #DD91
     ASL A ; #DD93
     ASL A ; #DD94
-    ORA $E063, X ; #DD95
+    ORA L7_E063, X ; #DD95
     STA $0360, Y ; #DD98
     STA <$0B ; #DD9B
     ORA #$03 ; #DD9D
@@ -4239,7 +4296,7 @@ L7_DD6B:
     ASL A ; #DDAA
     ASL A ; #DDAB
     ASL A ; #DDAC
-    ORA $E05B, X ; #DDAD
+    ORA L7_E05B, X ; #DDAD
     STA $0361, Y ; #DDB0
     STA <$0A ; #DDB3
     LDA #$1F ; #DDB5
@@ -4263,7 +4320,7 @@ L7_DDCB:
     AND #$03 ; #DDD4
     BNE L7_DDCB ; #DDD6
     LDX <$09 ; #DDD8
-    LDA $DF6A, X ; #DDDA
+    LDA L7_DF6A, X ; #DDDA
     BEQ L7_DE30 ; #DDDD
     AND <$10 ; #DDDF
     STA <$10 ; #DDE1
@@ -4313,7 +4370,7 @@ L7_DE30:
     BNE L7_DDC2 ; #DE3A
 L7_DE3C:
     LDX <$09 ; #DE3C
-    LDA $DF6A, X ; #DE3E
+    LDA L7_DF6A, X ; #DE3E
     BEQ L7_DE48 ; #DE41
     TYA ; #DE43
     CLC ; #DE44
@@ -4328,11 +4385,11 @@ L7_DE48:
     TAX ; #DE53
     LDA <$2A ; #DE54
     CLC ; #DE56
-    ADC $DF62, X ; #DE57
+    ADC L7_DF62, X ; #DE57
     CMP #$1E ; #DE5A
     BCC L7_DE64 ; #DE5C
     JSR L7_DE8A ; #DE5E
-    LDA $DF63, X ; #DE61
+    LDA (L7_DF62 + 1), X ; #DE61
 L7_DE64:
     STA <$2A ; #DE64
     LDA <$2F ; #DE66
@@ -4340,11 +4397,11 @@ L7_DE64:
     TAX ; #DE6A
     LDA <$29 ; #DE6B
     CLC ; #DE6D
-    ADC $DF82, X ; #DE6E
+    ADC L7_DF82, X ; #DE6E
     CMP #$F0 ; #DE71
     BCC L7_DE79 ; #DE73
     CLC ; #DE75
-    ADC $DF83, X ; #DE76
+    ADC (L7_DF82 + 1), X ; #DE76
 L7_DE79:
     STA <$29 ; #DE79
     DEC <$05 ; #DE7B
@@ -4353,7 +4410,7 @@ L7_DE79:
 L7_DE82:
     LDA #$FF ; #DE82
     STA $0360, Y ; #DE84
-    STA <$19 ; #DE87
+    STA <VRamBuffer1Dirty
     RTS ; #DE89
 L7_DE8A:
     LDA <$2F ; #DE8A
@@ -4472,6 +4529,7 @@ L7_DF26:
     RTS ; #DF61
 
 
+L7_DF62:
     .db $FF ; #DF62
     .db $1D ; #DF63
     .db $FE ; #DF64
@@ -4482,6 +4540,7 @@ L7_DF26:
     .db $02 ; #DF68
     .db $01 ; #DF69
 
+L7_DF6A:
     .db $00 ; #DF6A
     .db $0F ; #DF6B
     .db $00 ; #DF6C
@@ -4506,6 +4565,8 @@ L7_DF26:
     .db $F0 ; #DF7F
     .db $0F ; #DF80
     .db $0F ; #DF81
+
+L7_DF82:
     .db $F8 ; #DF82
     .db $F0 ; #DF83
     .db $00 ; #DF84
@@ -4532,7 +4593,7 @@ L7_DF8F:
     STA <$12 ; #DFA1
 L7_DFA3:
     LDY <$02 ; #DFA3
-    LDA $E04F, Y ; #DFA5
+    LDA L7_E04F, Y ; #DFA5
     STA <$03 ; #DFA8
     LDA [$00], Y ; #DFAA
     TAX ; #DFAC
@@ -4541,7 +4602,7 @@ L7_DFA3:
     PHA ; #DFB2
     TXA ; #DFB3
     PHA ; #DFB4
-    LDX $E053, Y ; #DFB5
+    LDX L7_E053, Y ; #DFB5
     TYA ; #DFB8
     AND #$02 ; #DFB9
     BEQ L7_DFC4 ; #DFBB
@@ -4557,7 +4618,7 @@ L7_DFC4:
 L7_DFCA:
     STA <$04 ; #DFCA
     LDA <$11, X ; #DFCC
-    AND $E057, X ; #DFCE
+    AND L7_E057, X ; #DFCE
     ORA <$04 ; #DFD1
     STA <$11, X ; #DFD3
     PLA ; #DFD5
@@ -4575,7 +4636,7 @@ L7_DFE3:
     ORA <$10 ; #DFE3
     STA <$10 ; #DFE5
     LDY <$03 ; #DFE7
-    LDA $BAE0, X ; #DFE9
+    LDA $BAE0, X ; #DFE9                ; TODO Disassemble banks 0 and 1. Create labels and ".org" sections.
     STA $0140, Y ; #DFEC
     LDA $BBE0, X ; #DFEF
     STA $0141, Y ; #DFF2
@@ -4640,18 +4701,25 @@ L7_E025:
     .db $01 ; #E04E
 
 
+L7_E04F:
     .db $00 ; #E04F
     .db $02 ; #E050
     .db $08 ; #E051
     .db $0A ; #E052
+
+L7_E053:
     .db $00 ; #E053
     .db $01 ; #E054
     .db $00 ; #E055
     .db $01 ; #E056
+
+L7_E057:
     .db $F0 ; #E057
     .db $F0 ; #E058
     .db $0F ; #E059
     .db $0F ; #E05A
+
+L7_E05B:
     .db $00 ; #E05B
     .db $80 ; #E05C
     .db $00 ; #E05D
@@ -4661,6 +4729,7 @@ L7_E025:
     .db $00 ; #E061
     .db $80 ; #E062
 
+L7_E063:
     .db $20 ; #E063
     .db $20 ; #E064
     .db $21 ; #E065
@@ -4767,7 +4836,7 @@ L7_E0EE:
     CMP #$0D ; #E117
     BNE L7_E176 ; #E119
 
-    LDX <$50 ; #E11B
+    LDX <TwoPlayersMode
 L7_E11D:
     LDA <$54, X ; #E11D
     CMP #$0C ; #E11F
@@ -4783,7 +4852,7 @@ L7_E11D:
     LDA #$00 ; #E139
     STA $0420, X ; #E13B
 L7_E13E:
-    DEX ; #E13E
+    DEX
     BPL L7_E11D ; #E13F
 
     LDX #$01 ; #E141
@@ -5751,18 +5820,18 @@ L7_E590:                                ; Do we load new "screen" here? Like lev
     LDX <$10 ; #E595
     TXA ; #E597
     PHA ; #E598
-    LDA $E662, X ; #E599
+    LDA (L7_E663 - 1), X ; #E599        ; TODO what the hell, 1-based indexing?
     STA <$22 ; #E59C
     STA <$23 ; #E59E
-    LDA $E67A, X ; #E5A0
+    LDA (L7_E67B - 1), X ; #E5A0
     STA <$FB ; #E5A3
     STA $0520 ; #E5A5
     STA $0521 ; #E5A8
-    LDA $E692, X ; #E5AB
+    LDA (L7_E693 - 1), X ; #E5AB
     STA <$FD ; #E5AE
     STA $0500 ; #E5B0
     STA $0501 ; #E5B3
-    LDA $E6AA, X ; #E5B6
+    LDA $E6AA, X ; #E5B6                ; TODO continue
     STA <NextChrBank0 ; #E5B9
     LDA $E6C2, X ; #E5BB
     STA <NextChrBank1 ; #E5BE
@@ -5844,13 +5913,13 @@ L7_E656:
     JMP L7_E616 ; #E660
 
 
-    ; #E662
+L7_E663:
     .db $00, $14, $00, $08, $00, $17, $00, $10, $08, $00, $08, $00, $06, $19, $10, $08, $07, $05, $08, $07, $17, $07, $00, $12
 
-    ; #E67A
+L7_E67B:
     .db $00, $02, $00, $01, $00, $02, $00, $02, $01, $00, $01, $00, $00, $03, $02, $01, $00, $00, $01, $00, $02, $00, $00, $02
 
-    ; #E692
+L7_E693:
     .db $00, $06, $00, $00, $00, $07, $00, $00, $00, $00, $00, $00, $06, $01, $00, $00, $07, $05, $00, $07, $07, $07, $00, $04
     ; #E6AA
 ; Array of CHR banks 0.
@@ -5999,7 +6068,7 @@ L7_E81E:
     LDY <$4A ; #E820
     JSR L7_E06B ; #E822
     LDA <$31 ; #E825
-    CMP #$0D ; #E827
+    CMP #ZONE_CLR ; #E827
     BNE L7_E82D ; #E829
     LDA #$0B ; #E82B
 L7_E82D:
@@ -6032,7 +6101,7 @@ L7_E82D:
     LSR A ; #E855
     AND #$07 ; #E856
     TAY ; #E858
-    LDA $E063, Y ; #E859
+    LDA L7_E063, Y ; #E859
     ORA <$00 ; #E85C
     STA $03E0, X ; #E85E
     STA $03E5, X ; #E861
@@ -6042,9 +6111,9 @@ L7_E82D:
     AND #$07 ; #E86A
     ASL A ; #E86C
     ASL A ; #E86D
-    ORA $E05B, Y ; #E86E
+    ORA L7_E05B, Y ; #E86E
     LDY <$4C ; #E871
-    ORA $E9BD, Y ; #E873
+    ORA L7_E9BD, Y ; #E873
     STA $03E1, X ; #E876
     ORA #$20 ; #E879
     STA $03E6, X ; #E87B
@@ -6085,16 +6154,16 @@ L7_E8C9:
     LDY <$4B ; #E8C9
     LDX <$4C ; #E8CB
     LDA $0780, Y ; #E8CD
-    AND $E9B9, X ; #E8D0
+    AND L7_E9B9, X ; #E8D0
     ORA <$02 ; #E8D3
     STA $0780, Y ; #E8D5
     PHA ; #E8D8
     LDA <$4B ; #E8D9
     ASL A ; #E8DB
-    ADC $E9C1, X ; #E8DC
+    ADC L7_E9C1, X ; #E8DC
     TAY ; #E8DF
     LDA $0600, Y ; #E8E0
-    AND $E9C5, X ; #E8E3
+    AND L7_E9C5, X ; #E8E3
     STA $0600, Y ; #E8E6
     LDX <$30 ; #E8E9
     PLA ; #E8EB
@@ -6302,21 +6371,25 @@ L7_E8C9:
     .db $00 ; #E9B7
     .db $D2 ; #E9B8
 
+L7_E9B9:
     .db $FC ; #E9B9
     .db $F3 ; #E9BA
     .db $CF ; #E9BB
     .db $3F ; #E9BC
 
+L7_E9BD:
     .db $00 ; #E9BD
     .db $02 ; #E9BE
     .db $40 ; #E9BF
     .db $42 ; #E9C0
 
+L7_E9C1:
     .db $00 ; #E9C1
     .db $01 ; #E9C2
     .db $00 ; #E9C3
     .db $01 ; #E9C4
 
+L7_E9C5:
     .db $F0 ; #E9C5
     .db $F0 ; #E9C6
     .db $0F ; #E9C7
@@ -6331,7 +6404,7 @@ PaletteSwapTick:
     LDX #$00                            ; X = 0
     LDA <PalettesAnimCounter            ; A = PalettesAnimCounter
     INC <PalettesAnimCounter            ; ++PalettesAnimCounter
-    CMP $EA71, Y                        ;
+    CMP (L7_EA70 + 1), Y
     BNE L7_EA0E                         ; Return if A != $EA70[Y + 1]
     STX <PalettesAnimCounter            ; PalettesAnimCounter = 0
     LDA <PalettesAnimFrame              ; A = PalettesAnimFrame
@@ -6542,13 +6615,13 @@ L7_EB30:
 L7_EB3B:
     LDA #$00 ; #EB3B
     STA <$02 ; #EB3D
-    LDA $EC97, Y ; #EB3F
+    LDA L7_EC97, Y ; #EB3F
     BPL L7_EB46 ; #EB42
     DEC <$02 ; #EB44
 L7_EB46:
     LDA $04F0, X ; #EB46
     CLC ; #EB49
-    ADC $EC97, Y ; #EB4A
+    ADC L7_EC97, Y ; #EB4A
     STA <$06 ; #EB4D
     LDA $0500, X ; #EB4F
     ADC <$02 ; #EB52
@@ -6624,7 +6697,7 @@ L7_EBC0:
     LSR A ; #EBC8
     PHA ; #EBC9
     AND #$38 ; #EBCA
-    ORA $ED34, Y ; #EBCC
+    ORA L7_ED34, Y ; #EBCC
     ORA <$05 ; #EBCF
     STA <$05 ; #EBD1
     ASL A ; #EBD3
@@ -6641,7 +6714,7 @@ L7_EBC0:
     LDA $0600, Y ; #EBE4
     STA <$02 ; #EBE7
     LDY <$04 ; #EBE9
-    LDA $ED36, Y ; #EBEB
+    LDA L7_ED36, Y ; #EBEB
     BEQ L7_EBF3 ; #EBEE
     AND <$02 ; #EBF0
     RTS ; #EBF2
@@ -6811,6 +6884,8 @@ L7_EBFA:
     .db $E8 ; #EC94
     .db $F3 ; #EC95
     .db $F3 ; #EC96
+
+L7_EC97:
     .db $08 ; #EC97
     .db $08 ; #EC98
     .db $08 ; #EC99
@@ -6968,12 +7043,17 @@ L7_EBFA:
     .db $07 ; #ED31
     .db $F9 ; #ED32
     .db $07 ; #ED33
+
+L7_ED34:
     .db $00 ; #ED34
     .db $40 ; #ED35
+
+L7_ED36:
     .db $0F ; #ED36
     .db $0F ; #ED37
     .db $00 ; #ED38
     .db $00 ; #ED39
+
 L7_ED3A:
     CPX #$02 ; #ED3A
     BCS L7_ED43 ; #ED3C
@@ -7894,6 +7974,8 @@ L7_F2C5:
     STA $0520, X ; #F2E6
 L7_F2E9:
     RTS ; #F2E9
+
+L7_F2EA:
     LDA $0560, X ; #F2EA
     BPL L7_F2F5 ; #F2ED
     JSR L7_F2C5 ; #F2EF
@@ -7978,7 +8060,7 @@ L7_F369:
 ; A - param
 ; X and Y registers are effectively untouched by this function, cool.
 L7_F377:
-    STA <$D9                            ; Store A in <$D9.
+    STA <$D9                            ; Store A in <$D9. Music?
 EnqueueSfx:
     STX <$00                            ; Store X in temp buffer to get it back later.
     LDX <SfxQueueWriteIdx               ; Read X from SfxQueueWriteIdx.
@@ -8010,6 +8092,8 @@ L7_F392:
     JSR WaitNmiAndReadInputs ; #F3A6
     PLA ; #F3A9
     JMP SetFirstPrgBank ; #F3AA
+
+L7_F3AD:
     LDA <CurPrgBank ; #F3AD
     PHA ; #F3AF
     LDA #$08 ; #F3B0
@@ -8017,6 +8101,8 @@ L7_F392:
     JSR L7_DAFD ; #F3B4
     PLA ; #F3B7
     JMP SetFirstPrgBank ; #F3B8
+
+L7_F3BB:
     LDA <CurPrgBank ; #F3BB
     PHA ; #F3BD
     LDA #$04 ; #F3BE
@@ -8038,6 +8124,8 @@ L7_F3C9:
     JSR FillScreen ; #F3DE
     PLA ; #F3E1
     JMP SetFirstPrgBank ; #F3E2
+
+L7_F3E5:
     LDA <CurPrgBank ; #F3E5
     PHA ; #F3E7
     JSR EnableDisplay ; #F3E8
@@ -8052,7 +8140,7 @@ L7_F3F5:
     STA <$01 ; #F3F7
     LDA #$02 ; #F3F9
     STA <$00 ; #F3FB
-    LDY $F49F, X ; #F3FD
+    LDY L7_F49F, X ; #F3FD
     CLC ; #F400
     LDA #$01 ; #F401
 L7_F403:
@@ -8137,8 +8225,12 @@ L7_F46A:
     STA $0480, Y ; #F498
     STA $0490, Y ; #F49B
     RTS ; #F49E
-    ASL $BD3E ; #F49F
-    BPL L7_F4A9 ; #F4A2
+L7_F49F:                                ; another wtf
+    .db $0E ; #F49F
+    .db $3E ; #F4A0
+    .db $BD ; #F4A1
+    .db $10 ; #F4A2
+    .db $05 ; #F4A3
     SEC ; #F4A4
     SBC <ScrollY ; #F4A5
     BCS L7_F4AB ; #F4A7
@@ -8274,9 +8366,10 @@ L7_F57B:
     CLC ; #F57E
     ADC <$04 ; #F57F
     TAY ; #F581
-    LDA $F586, Y ; #F582
+    LDA L7_F586, Y ; #F582
     RTS ; #F585
 
+L7_F586:
     .db $04 ; #F586
     .db $05 ; #F587
     .db $06 ; #F588
@@ -8347,8 +8440,8 @@ L7_F5E2:
     ORA $0058, Y ; #F5E4
     STA $0058, Y ; #F5E7
     BMI L7_F628 ; #F5EA
-    LDA <$14, X ; #F5EC
-    AND #$40 ; #F5EE
+    LDA <JoypadTapped, X ; #F5EC
+    AND #BUTTON_B ; #F5EE
     BEQ L7_F61E ; #F5F0
     LDA $0054, Y ; #F5F2
     CMP #$03 ; #F5F5
@@ -8542,7 +8635,7 @@ L7_F74C:
     BNE L7_F780 ; #F758
     LDA <$00 ; #F75A
     LDY <$02 ; #F75C
-    CMP $FA18, Y ; #F75E
+    CMP L7_FA18, Y ; #F75E
     BEQ L7_F765 ; #F761
     BCS L7_F780 ; #F763
 L7_F765:
@@ -8551,10 +8644,10 @@ L7_F765:
     JSR L7_F6DC ; #F769
     STA <$04 ; #F76C
     LDY <$02 ; #F76E
-    CMP $F9FC, Y ; #F770
+    CMP L7_F9FC, Y ; #F770
     BCS L7_F780 ; #F773
     LDY <$02 ; #F775
-    LDA $FA18, Y ; #F777
+    LDA L7_FA18, Y ; #F777
     SEC ; #F77A
     SBC <$03 ; #F77B
     STA <$10 ; #F77D
@@ -8607,19 +8700,19 @@ L7_F7C8:
     BNE L7_F7FC ; #F7D4
     LDA <$00 ; #F7D6
     LDY <$02 ; #F7D8
-    CMP $FA18, Y ; #F7DA
+    CMP L7_FA18, Y ; #F7DA
     BCS L7_F7FC ; #F7DD
     LDY <$12 ; #F7DF
     JSR L7_F6DC ; #F7E1
     STA <$04 ; #F7E4
     LDY <$02 ; #F7E6
-    CMP $F9FC, Y ; #F7E8
+    CMP L7_F9FC, Y ; #F7E8
     BEQ L7_F7EF ; #F7EB
     BCS L7_F7FC ; #F7ED
 L7_F7EF:
     STA <$03 ; #F7EF
     LDY <$02 ; #F7F1
-    LDA $F9FC, Y ; #F7F3
+    LDA L7_F9FC, Y ; #F7F3
     SEC ; #F7F6
     SBC <$03 ; #F7F7
     STA <$11 ; #F7F9
@@ -8647,8 +8740,8 @@ L7_F81C:
     BCS L7_F856 ; #F820
     LDA <$56, X ; #F822
     BNE L7_F856 ; #F824
-    LDA <$16, X ; #F826
-    AND #$40 ; #F828
+    LDA <JoypadPressed, X ; #F826
+    AND #BUTTON_B ; #F828
     BNE L7_F868 ; #F82A
 L7_F82C:
     LDA $0420, Y ; #F82C
@@ -8679,8 +8772,8 @@ L7_F858:
     BCS L7_F856 ; #F85C
     LDA <$56, X ; #F85E
     BNE L7_F856 ; #F860
-    LDA <$14, X ; #F862
-    AND #$40 ; #F864
+    LDA <JoypadTapped, X ; #F862
+    AND #BUTTON_B ; #F864
     BEQ L7_F856 ; #F866
 L7_F868:
     TYA ; #F868
@@ -8799,12 +8892,12 @@ L7_F949:
     BNE L7_F973 ; #F95C
     LDA <$00 ; #F95E
     LDY <$02 ; #F960
-    CMP $FA18, Y ; #F962
+    CMP L7_FA18, Y ; #F962
     BCS L7_F973 ; #F965
     LDY <$10 ; #F967
     JSR L7_F6DC ; #F969
     LDY <$02 ; #F96C
-    CMP $F9FC, Y ; #F96E
+    CMP L7_F9FC, Y ; #F96E
     BCC L7_F974 ; #F971
 L7_F973:
     SEC ; #F973
@@ -8842,23 +8935,25 @@ L7_F9AC:
     STY <$10 ; #F9AC
     LDA $0420, Y ; #F9AE
     TAY ; #F9B1
-    LDA $F9D0, Y ; #F9B2
+    LDA L7_F9D0, Y ; #F9B2
     STA <$03 ; #F9B5
-    LDA $F9D5, Y ; #F9B7
+    LDA (L7_F9D4 + 1), Y ; #F9B7
     STA <$04 ; #F9BA
 L7_F9BC:
     LDA $0570, X ; #F9BC
     AND #$3F ; #F9BF
     TAY ; #F9C1
-    LDA $F9FC, Y ; #F9C2
+    LDA L7_F9FC, Y ; #F9C2
     SEC ; #F9C5
     SBC <$03 ; #F9C6
     STA <$03 ; #F9C8
-    LDA $FA18, Y ; #F9CA
+    LDA L7_FA18, Y ; #F9CA
     CLC ; #F9CD
     ADC <$04 ; #F9CE
+L7_F9D0:                                ; what the fuck
     STA <$04 ; #F9D0
     LDY <$10 ; #F9D2
+L7_F9D4:
     JSR L7_F696 ; #F9D4
     LDA <$01 ; #F9D7
     BNE L7_F9E8 ; #F9D9
@@ -8888,6 +8983,7 @@ L7_F9F1:
     .db $00 ; #F9FA
     .db $04 ; #F9FB
 
+L7_F9FC:
     .db $14 ; #F9FC
     .db $18 ; #F9FD
     .db $18 ; #F9FE
@@ -8917,6 +9013,7 @@ L7_F9F1:
     .db $0C ; #FA16
     .db $0C ; #FA17
 
+L7_FA18:
     .db $10 ; #FA18
     .db $14 ; #FA19
     .db $10 ; #FA1A
@@ -8973,7 +9070,7 @@ L7_FA34:
     LSR A ; #FA57
     LSR A ; #FA58
     TAY ; #FA59
-    LDA $E05B, Y ; #FA5A
+    LDA L7_E05B, Y ; #FA5A
     ORA $03B9 ; #FA5D
     STA $03B9 ; #FA60
     LDA $0500, X ; #FA63
@@ -8981,7 +9078,7 @@ L7_FA34:
     ASL A ; #FA68
     ASL A ; #FA69
     PHA ; #FA6A
-    ORA $E063, Y ; #FA6B
+    ORA L7_E063, Y ; #FA6B
     STA $03B8 ; #FA6E
     STA $03BF ; #FA71
     STA $03C6 ; #FA74
@@ -9022,7 +9119,7 @@ L7_FABC:
     CLC ; #FAC0
     ADC <$11 ; #FAC1
     TAY ; #FAC3
-    LDA $FB05, Y ; #FAC4
+    LDA L7_FB05, Y ; #FAC4
     TAY ; #FAC7
     LDA $BAE0, Y ; #FAC8
     STA $03B8, X ; #FACB
@@ -9051,6 +9148,8 @@ L7_FB01:
     .db $05 ; #FB02
     .db $11 ; #FB03
     .db $13 ; #FB04
+
+L7_FB05:
     .db $98 ; #FB05
     .db $99 ; #FB06
     .db $96 ; #FB07
@@ -9092,10 +9191,7 @@ RecordDemoInputs:                       ; FB19
     LDA #$00
     STA <(DemoInputsRecArray + 6)
     LDA #$66
-    STA <(DemoInputsRecArray + 7)       ; 00 60 00 62 00 64 00 66. Addresses, but for what? Inputs for demo play?
-                                        ; Reading from $6xxx will cause open bus behavior.
-                                        ; As stated in various sources, "LDA [$B0], Y" will cause it to get byte $6x.
-                                        ; Interpreted as an input, these values don't make much sense.
+    STA <(DemoInputsRecArray + 7)       ; 00 60 00 62 00 64 00 66. WRAM addresses.
 RecordDemoInputsJ1Tap:
     LDY #$00 ; #FB3D
     STY <$E4 ; #FB3F
@@ -9249,6 +9345,7 @@ RecordDemoInputsBufferOverflow:
 InfiniteLoop:
     JSR WaitNmiAndReadInputs
     JMP InfiniteLoop
+
 
     .db $48 ; #FC49
     .db $21 ; #FC4A

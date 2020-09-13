@@ -673,6 +673,9 @@ L2_8A67:
     .db $EF ; #8AFD
     .db $FF ; #8AFE
     .db $DF ; #8AFF
+
+
+L2_8B00:
     LDA $04D0 ; #8B00
     PHA ; #8B03
     LDA $04D1 ; #8B04
@@ -774,16 +777,16 @@ L2_8BC3:
     BEQ L2_8BDF ; #8BCD
     CMP #$04 ; #8BCF
     BEQ L2_8BE5 ; #8BD1
-    JSR $F21E ; #8BD3
+    JSR L7_F21E ; #8BD3
     JMP L2_8BE8 ; #8BD6
 L2_8BD9:
-    JSR $F23C ; #8BD9
+    JSR L7_F23C ; #8BD9
     JMP L2_8BE8 ; #8BDC
 L2_8BDF:
-    JSR $F27F ; #8BDF
+    JSR L7_F27F ; #8BDF
     JMP L2_8BE8 ; #8BE2
 L2_8BE5:
-    JSR $F25A ; #8BE5
+    JSR L7_F25A ; #8BE5
 L2_8BE8:
     JSR L2_8CE0 ; #8BE8
     DEC $0480 ; #8BEB
@@ -845,7 +848,7 @@ L2_8C56:
     LDA #$04 ; #8C56
     STA <$10 ; #8C58
 L2_8C5A:
-    JSR $F3AD ; #8C5A
+    JSR L7_F3AD ; #8C5A
     JSR L2_8CE0 ; #8C5D
     LDA <$FA ; #8C60
     BNE L2_8C20 ; #8C62
@@ -890,7 +893,7 @@ L2_8CAB:
     LDA #$04 ; #8CAB
     STA <$10 ; #8CAD
 L2_8CAF:
-    JSR $F3BB ; #8CAF
+    JSR L7_F3BB ; #8CAF
     JSR L2_8CE0 ; #8CB2
     LDA <$FA ; #8CB5
     BNE L2_8C75 ; #8CB7
@@ -1875,7 +1878,7 @@ L2_90F4:
     SBC $05DA ; #9104
     BCC L2_90EC ; #9107
 L2_9109:
-    JSR $F3E5 ; #9109
+    JSR L7_F3E5 ; #9109
     LDA <$31 ; #910C
     CMP #$07 ; #910E
     BNE L2_9115 ; #9110
@@ -1919,8 +1922,8 @@ L2_914C:
     STA $0542 ; #9165
 L2_9168:
     LDX #$02 ; #9168
-    JSR $F2EA ; #916A
-    JSR $F23C ; #916D
+    JSR L7_F2EA ; #916A
+    JSR L7_F23C ; #916D
     JSR L2_91EC ; #9170
     LDA $0430 ; #9173
     CMP #$04 ; #9176
@@ -2323,7 +2326,7 @@ L2_9457:
     RTS ; #945D
 L2_945E:
     LDA #$07 ; #945E
-    JSR $F377 ; #9460
+    JSR L7_F377 ; #9460
 L2_9463:
     JSR WaitNmiAndReadInputs ; #9463
     JMP L2_9463 ; #9466
@@ -2335,7 +2338,7 @@ L2_946F:
     RTS ; #946F
 L2_9470:
     LDA #$27 ; #9470
-    JSR $F379 ; #9472
+    JSR EnqueueSfx ; #9472
     JSR WaitNmiAndReadInputs ; #9475
     JSR WaitNmiAndReadInputs ; #9478
 L2_947B:
@@ -5362,7 +5365,7 @@ L2_A000:
     BNE L2_A045
 L2_A01C:
     LDA #$00
-    STA <$50                            ; Tapped LEFT, TwoPlayersMode = false.
+    STA <TwoPlayersMode                 ; Tapped LEFT, TwoPlayersMode = false.
     BEQ L2_A045
 
 L2_A022:                                ; Nothing tapped.
@@ -5377,7 +5380,7 @@ L2_A022:                                ; Nothing tapped.
     ORA <$BE ; #A032
     BNE L2_A000 ; #A034
     LDA #$01 ; #A036
-    STA <$50 ; #A038
+    STA <TwoPlayersMode ; #A038
     STA <$B8 ; #A03A
     JMP L2_A0BB ; #A03C
 
@@ -5418,9 +5421,9 @@ L2_A06C:                                ; Select character.
     AND #BUTTON_RIGHT
     TAY
     LDA L2_A0E1, Y                      ; Load cursor X position.
-    STA $0203                           ; Set it for cursor sprite.
+    STA (OAM + 3)                       ; Set it for cursor sprite.
     LDA #$27
-    JSR $F379                           ; Play sound.
+    JSR EnqueueSfx                      ; Play sound.
 L2_A086:
     JSR WaitNmiAndReadInputs ; #A086
     JMP L2_A06C ; #A089
@@ -6354,13 +6357,14 @@ L2_A479:
 L2_A486:
     RTS ; #A486
 
+
 L2_A487:
     LDX #$07 ; #A487
 L2_A489:
-    TXA ; #A489
-    PHA ; #A48A
-    ASL A ; #A48B
-    TAY ; #A48C
+    TXA
+    PHA
+    ASL A
+    TAY                                 ; Y = X << 1
     LDA (L2_A550 + 0), Y ; #A48D
     STA $0516, X ; #A490
     LDA (L2_A550 + 1), Y ; #A493
@@ -6407,7 +6411,7 @@ L2_A4DE:
     STA $0410 ; #A4E9
     STA $0411 ; #A4EC
     LDA #$28 ; #A4EF
-    STA <$97 ; #A4F1
+    STA <OamUsedSize
     JSR L7_F392 ; #A4F3
     PLA ; #A4F6
     SEC ; #A4F7
@@ -6598,8 +6602,8 @@ L2_A5F6:
     STA $0234 ; #A606
     LDA $0420 ; #A609
     BNE L2_A613 ; #A60C
-    LDA #$B0 ; #A60E
-    STA $0237 ; #A610                   Some sprites manipulations. Will decipher them later.
+    LDA #$B0                            ; L2_A6B9[1]
+    STA $0237                           ; Some sprites manipulations. Will decipher them later.
 L2_A613:
     LDA <Joypad1Tapped
     CMP #BUTTON_A
@@ -6613,7 +6617,7 @@ L2_A613:
     TAY ; #A625
     LDA $0420, Y ; #A626
     BEQ L2_A631 ; #A629
-    LDA L2_A6B9, Y ; #A62B
+    LDA L2_A6B9, Y                      ; some left-right positions
     STA $0237 ; #A62E
 L2_A631:
     LDA #$38 ; #A631

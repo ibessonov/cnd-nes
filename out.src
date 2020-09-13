@@ -72,12 +72,10 @@ ZONE_G                  = $07
 ZONE_H                  = $08
 ZONE_I                  = $09
 ZONE_J                  = $0A
-
 ZONE_MAP_1              = $0B
 ZONE_MAP_2              = $0C
-
-; ZONE_?                  = $0D
-; ZONE_?                  = $0E
+ZONE_CLR                = $0D
+ZONE_CNT                = $0E
 
 SECOND                  = 60            ; Frames.
 
@@ -88,6 +86,8 @@ SFX_Q_IDX_MASK          = SFX_Q_LEN - 1 ; $07
 ; Variables.
 
 Joypad                  = $14
+JoypadTapped            = $14
+JoypadPressed           = $16
 Joypad1Tmp              = $14
 Joypad2Tmp              = $15
 Joypad1Tapped           = $14           ; Byte
@@ -112,6 +112,8 @@ PalettesAnimCounter     = $3E
 PalettesAnimFrame       = $3F
 
 TwoPlayersMode          = $50           ; Boolean: 0 / 1
+
+; $54, $55 have values $00 - $0C.
 
 DemoInputsRecArray      = $B0
 DemoInputsRecJ1Tap      = $B0
@@ -144,7 +146,7 @@ PpuCtrlVal              = $FF
     .include "bank0.src"
     .include "bank1.src"
     .include "bank2.src"
-    .include "bank3.src"
+    .include "bank3.src"                ; SFX?
     .include "bank4.src"
     .include "bank5.src"
     .include "bank6.src"
