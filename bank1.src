@@ -4100,7 +4100,7 @@
 SetNextDemoInput:               ; TODO continue and add comments, it's easy.
     LDA <(DemoJoy1Tap + 1)
     BNE SetNextDemoInputNoInit
-    LDA <$BD
+    LDA <DemoIdx
     ASL A
     ASL A
     TAY                                 ; Y = A << 2
@@ -4216,8 +4216,8 @@ L1_90CC:
     RTS ; #90CC
 
 StopDemoInputs:
-    LDA #$FF ; #90CD
-    STA <$B8 ; #90CF
+    LDA #$FF
+    STA <DemoStatus
     RTS
 
 

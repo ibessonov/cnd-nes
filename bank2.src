@@ -2134,7 +2134,7 @@ L2_92D1:
     DEY ; #92D8
     BPL L2_92D1 ; #92D9
     STY $036B ; #92DB
-    STY <$19 ; #92DE
+    STY <VRamBuffer1Dirty
     JSR L2_947B ; #92E0
     LDX <$10 ; #92E3
     INC <$10 ; #92E5
@@ -2186,7 +2186,7 @@ L2_9334:
     DEC <$13 ; #9346
     DEY ; #9348
     STY $0364 ; #9349
-    STY <$19 ; #934C
+    STY <VRamBuffer1Dirty
     JSR L2_9470 ; #934E
     LDA <$16 ; #9351
     AND #$10 ; #9353
@@ -2210,7 +2210,7 @@ L2_9375:
     STA $0363, Y ; #9375
     DEY ; #9378
     BPL L2_9375 ; #9379
-    STY <$19 ; #937B
+    STY <VRamBuffer1Dirty
     JSR L2_9470 ; #937D
     LDA <$16 ; #9380
     AND #$10 ; #9382
@@ -2274,7 +2274,7 @@ L2_93EA:
     BNE L2_93DD ; #93F4
     LDX #$FF ; #93F6
     STX $037B ; #93F8
-    STX <$19 ; #93FB
+    STX <VRamBuffer1Dirty
     JSR L2_947B ; #93FD
     LDX <$0E ; #9400
     CPX #$03 ; #9402
@@ -2313,7 +2313,7 @@ L2_9441:
     DEY ; #9444
     BPL L2_9441 ; #9445
     STY $037B ; #9447
-    STY <$19 ; #944A
+    STY <VRamBuffer1Dirty
     JSR L2_947B ; #944C
     INX ; #944F
     CPX #$03 ; #9450
@@ -5369,19 +5369,19 @@ L2_A01C:
     BEQ L2_A045
 
 L2_A022:                                ; Nothing tapped.
-    JSR WaitNmiAndReadInputs ; #A022
-    LDA <$BE ; #A025
-    SEC ; #A027
-    SBC #$01 ; #A028
-    STA <$BE ; #A02A
-    LDA <$BF ; #A02C
-    SBC #$00 ; #A02E
-    STA <$BF ; #A030
-    ORA <$BE ; #A032
-    BNE L2_A000 ; #A034
-    LDA #$01 ; #A036
-    STA <TwoPlayersMode ; #A038
-    STA <$B8 ; #A03A
+    JSR WaitNmiAndReadInputs
+    LDA <DemoWaitCntrLsb
+    SEC
+    SBC #$01
+    STA <DemoWaitCntrLsb
+    LDA <DemoWaitCntrMsb
+    SBC #$00
+    STA <DemoWaitCntrMsb
+    ORA <DemoWaitCntrLsb                ; --DemoWaitCntr
+    BNE L2_A000
+    LDA #$01                            ; Demo wait counter is zero.
+    STA <TwoPlayersMode
+    STA <DemoStatus                     ; Start demo.
     JMP L2_A0BB ; #A03C
 
 L2_A03F:        ; Select tapped.
@@ -5399,7 +5399,7 @@ L2_A04D:
     JSR EnqueueSfx                      ; Play sound effect.
     JMP L2_A022
 
-L2_A058:        ; Start tapped.
+L2_A058:                                ; Start tapped.
     LDA <TwoPlayersMode
     BNE L2_A0BB                         ; Skip character select screen in two players mode.
     LDX #$17
@@ -5408,7 +5408,7 @@ L2_A05E:
     STA VRamBufferBase, X
     DEX
     BPL L2_A05E
-    STX <$19
+    STX <VRamBuffer1Dirty
     JSR WaitNmiAndReadInputs
 
 L2_A06C:                                ; Select character.
@@ -6279,7 +6279,7 @@ L2_A0E3:
 L2_A400
     LDX #$03
     JSR L2_A46B                         ; Put "Game Over" on the screen.
-    STA <$19                            ; Mark VRAM buffer as dirty.
+    STA <VRamBuffer1Dirty               ; Mark VRAM buffer as dirty.
     JMP HoldGameOverScreen
 
 
@@ -6333,7 +6333,7 @@ ContinueCursorSpriteCopyLoop:
     STA OAM, X
     DEX
     BPL ContinueCursorSpriteCopyLoop
-    STX <$19                            ; Marks VRAM buffer as dirty.
+    STX <VRamBuffer1Dirty               ; Marks VRAM buffer as dirty.
 ReturnFromGameOverScreen:
     RTS
 

@@ -402,7 +402,7 @@ L7_C253:
     BEQ L7_C265
     CMP #ZONE_MAP_2
     BEQ L7_C265                         ; Don't change banks if A is #$0B or #$0C.
-    LDA #$05                            ; Bank #5.
+    LDA #BANK_5                         ; Bank #5.
     JSR SetFirstPrgBank                 ; Set it.
     JSR $8000                           ; And execute its main function.
     ; I think another jump to dead code is missing here.
@@ -794,7 +794,7 @@ L7_C588:
     LDX #$00 ; #C5B4
     LDY #$00 ; #C5B6
     JSR FillScreen ; #C5B8
-    LDA #$02
+    LDA #BANK_2
     JSR SetFirstPrgBank                 ; Bank 2.
     LDX #$02
     JSR L2_8000
@@ -819,14 +819,14 @@ L7_C5DE:
     DEY ; #C5EA
     BPL L7_C5DE ; #C5EB
 
-    LDA #$84 ; #C5ED
-    STA <$BE ; #C5EF
-    LDA #$03 ; #C5F1
-    STA <$BF ; #C5F3
+    LDA #$84
+    STA <DemoWaitCntrLsb
+    LDA #$03
+    STA <DemoWaitCntrMsb                ; 15 seconds.
     JSR L2_A000 ; #C5F5
-    LDA <$B8 ; #C5F8
+    LDA <DemoStatus
     BEQ L7_C603 ; #C5FA
-    LDA <$BD ; #C5FC
+    LDA <DemoIdx
     STA <$31 ; #C5FE
     JMP L7_C60E ; #C600
 L7_C603:
@@ -872,7 +872,7 @@ L7_C63B:
 L7_C63F:
     STA <$E8, X
     DEX
-    BPL L7_C63F                         ; <$EB = <$EC = <$ED = <$EF = 0.
+    BPL L7_C63F                         ; <$E8 = <$E9 = <$EA = <$EB = 0.
     RTS
 
 
@@ -1106,7 +1106,7 @@ L7_C79C:
     LDA <Joypad1Tapped
     AND #BUTTON_SELECT
     BEQ L7_C7AA                         ; Branch if select wasn't tapped.
-    LDA #$02
+    LDA #BANK_2
     JSR SetFirstPrgBank
     JSR L2_8900                         ; Call $8900 in bank 2 if select was tapped. Have no idea what's in there.
 L7_C7AA:
@@ -1125,7 +1125,7 @@ L7_C7AA:
     JSR L7_C235 ; #C7C1
     LDA <CurrentZone
     STA <$31 ; #C7C6
-    LDA #$02 ; #C7C8
+    LDA #BANK_2 ; #C7C8
     JSR SetFirstPrgBank ; #C7CA
     JSR $9000 ; #C7CD
     LDA <$31 ; #C7D0
@@ -1139,20 +1139,20 @@ L7_C7DA:
     JSR L7_E096 ; #C7DC
     PLA ; #C7DF
     STA <$31 ; #C7E0
-    LDA #$02 ; #C7E2
+    LDA #BANK_2 ; #C7E2
     JSR SetFirstPrgBank ; #C7E4
     JSR L2_8B00 ; #C7E7
     JMP L7_C60E ; #C7EA
 L7_C7ED:
     JSR L7_C879 ; #C7ED
-    LDA #$06 ; #C7F0
+    LDA #BANK_6 ; #C7F0
     JSR SetFirstPrgBank ; #C7F2
     JSR $8000 ; #C7F5
     LDX <$30 ; #C7F8
     BEQ L7_C807 ; #C7FA
     LDA #$FF ; #C7FC
     STA $03E0, X ; #C7FE
-    STA <$1C ; #C801
+    STA <VRamBuffer3Dirty
     LDA #$00 ; #C803
     STA <$30 ; #C805
 L7_C807:
@@ -1173,7 +1173,7 @@ L7_C80C:
     JSR L7_E576 ; #C825
 L7_C828:
     JSR PaletteSwapTick ; #C828
-    LDA #$05 ; #C82B
+    LDA #BANK_5 ; #C82B
     JSR SetFirstPrgBank ; #C82D
     LDA #$28 ; #C830
     STA <OamUsedSize ; #C832
@@ -1187,7 +1187,7 @@ L7_C83E:
     STA <$9A ; #C843
     JSR WaitNmiAndReadInputs ; #C845
     INC <$9A ; #C848
-    LDA <$B8 ; #C84A
+    LDA <DemoStatus
     BEQ L7_C85E ; #C84C
     BMI L7_C861 ; #C84E
     LDA <Joypad1Tapped
@@ -1200,20 +1200,20 @@ L7_C85E:
     JMP L7_C77B ; #C85E
 
 L7_C861:
-    INC <$BD ; #C861
-    LDA <$BD ; #C863
+    INC <DemoIdx
+    LDA <DemoIdx
     CMP #$03 ; #C865
     BNE L7_C86D ; #C867
     LDA #$00 ; #C869
-    STA <$BD                            ; <$BD = (<$BD + 1) % 3
+    STA <DemoIdx                        ; DemoIdx = (DemoIdx + 1) % 3
 L7_C86D:
     LDX #$0C ; #C86D
     LDA #$00 ; #C86F
 L7_C871:
-    STA <$B0, X ; #C871
-    DEX ; #C873
+    STA <DemoJoyBase, X                 ; Clears DemoStatus as well.
+    DEX
     BPL L7_C871                         ; B0 .. BC
-    JMP L7_C588 ; #C876
+    JMP L7_C588
 
 
 L7_C879:
@@ -4668,7 +4668,7 @@ L7_E01B:
     LDX <$36 ; #E01D
     CPX #$06 ; #E01F
     BCC L7_E025 ; #E021
-    LDA #$01 ; #E023
+    LDA #BANK_1 ; #E023
 L7_E025:
     JSR SetFirstPrgBank ; #E025
     LDA #$00 ; #E028
@@ -4813,7 +4813,7 @@ L7_E096:
     STA <NextChrBank1
 
     LDA ZonesMusicArray, X
-    LDY <$B8 ; #E0E7
+    LDY <DemoStatus ; #E0E7
     BNE L7_E0EE ; #E0E9
     JSR L7_F377 ; #E0EB
 L7_E0EE:
@@ -5900,16 +5900,16 @@ L7_E627:
     INC <$FD ; #E642
     JSR L4_8090 ; #E644
     DEC <$FD ; #E647
-    LDA #$02 ; #E649
+    LDA #BANK_2 ; #E649
     JSR SetFirstPrgBank ; #E64B
     LDX #$00 ; #E64E
-    JSR $8000 ; #E650
+    JSR L2_8000 ; #E650
     JMP L7_E616 ; #E653
 L7_E656:
-    LDA #$02 ; #E656
+    LDA #BANK_2 ; #E656
     JSR SetFirstPrgBank ; #E658
     LDX #$01 ; #E65B
-    JSR $8000 ; #E65D
+    JSR L2_8000 ; #E65D
     JMP L7_E616 ; #E660
 
 
@@ -8051,7 +8051,7 @@ L7_F369:
     RTS ; #F36B
     JSR L7_E817 ; #F36C
     PHP ; #F36F
-    LDA #$06 ; #F370
+    LDA #BANK_6 ; #F370
     JSR SetFirstPrgBank ; #F372
     PLP ; #F375
     RTS ; #F376
@@ -8084,7 +8084,7 @@ L7_F392:
     PHA ; #F394
     INC <$9A ; #F395
     JSR HideSprites ; #F397
-    LDA #$05 ; #F39A
+    LDA #BANK_5 ; #F39A
     JSR SetFirstPrgBank ; #F39C
     JSR $8000 ; #F39F
     LDA #$00 ; #F3A2
@@ -9140,7 +9140,7 @@ L7_FABC:
     BPL L7_FABC ; #FAF5
     STY $03D8 ; #FAF7
     LDX <$10 ; #FAFA
-    LDA #$06 ; #FAFC
+    LDA #BANK_6 ; #FAFC
     JMP SetFirstPrgBank ; #FAFE
 
 L7_FB01:
@@ -9174,24 +9174,24 @@ L7_FB05:
 
 ; I guess this is a dead code that has been used while development to record demos.
 RecordDemoInputs:                       ; FB19
-    LDA <(DemoInputsRecJ1Tap + 1)
+    LDA <(DemoJoy1Tap + 1)
     BNE RecordDemoInputsJ1Tap           ; Skip default initialization to WRAM addresses.
     LDA #$00
-    STA <(DemoInputsRecArray + 0)
+    STA <(DemoJoyBase + 0)
     LDA #$60
-    STA <(DemoInputsRecArray + 1)
+    STA <(DemoJoyBase + 1)
     LDA #$00
-    STA <(DemoInputsRecArray + 2)
+    STA <(DemoJoyBase + 2)
     LDA #$62
-    STA <(DemoInputsRecArray + 3)
+    STA <(DemoJoyBase + 3)
     LDA #$00
-    STA <(DemoInputsRecArray + 4)
+    STA <(DemoJoyBase + 4)
     LDA #$64
-    STA <(DemoInputsRecArray + 5)
+    STA <(DemoJoyBase + 5)
     LDA #$00
-    STA <(DemoInputsRecArray + 6)
+    STA <(DemoJoyBase + 6)
     LDA #$66
-    STA <(DemoInputsRecArray + 7)       ; 00 60 00 62 00 64 00 66. WRAM addresses.
+    STA <(DemoJoyBase + 7)              ; 00 60 00 62 00 64 00 66. WRAM addresses.
 RecordDemoInputsJ1Tap:
     LDY #$00 ; #FB3D
     STY <$E4 ; #FB3F
@@ -9200,141 +9200,141 @@ RecordDemoInputsJ1Tap:
     STY <$E7 ; #FB45
 
     LDA <Joypad1Tapped
-    CMP [DemoInputsRecJ1Tap], Y
+    CMP [DemoJoy1Tap], Y
     BNE IncJ1TapAddr                    ; Branch if input doesn't match.
     INY
-    LDA [DemoInputsRecJ1Tap], Y
+    LDA [DemoJoy1Tap], Y
     CMP #$FF
     BEQ IncJ1TapAddr                    ; Branch if second byte is $FF.
-    LDA [DemoInputsRecJ1Tap], Y
+    LDA [DemoJoy1Tap], Y
     CLC
     ADC #$01
-    STA [DemoInputsRecJ1Tap], Y         ; ++[DemoInputsRecJ1Tap][Y]
+    STA [DemoJoy1Tap], Y                ; ++[DemoJoy1Tap][Y]
     BNE RecordDemoInputsJ2Tap           ; It wasn't $FF, so result is not $00. Jump is unconditional.
 IncJ1TapAddr:
     LDY #$00
-    LDA <DemoInputsRecJ1Tap
+    LDA <DemoJoy1Tap
     CLC
     ADC #$02
-    STA <DemoInputsRecJ1Tap             ; Increment LSB of indirect address by 2.
-    LDA <(DemoInputsRecJ1Tap + 1)
+    STA <DemoJoy1Tap                    ; Increment LSB of indirect address by 2.
+    LDA <(DemoJoy1Tap + 1)
     ADC #$00
-    STA <(DemoInputsRecJ1Tap + 1)       ; Increment MSB by carry flag.
+    STA <(DemoJoy1Tap + 1)              ; Increment MSB by carry flag.
     LDA <Joypad1Tapped
-    STA [DemoInputsRecJ1Tap], Y         ; Store joy 1 input into new address.
-    LDA <DemoInputsRecJ1Tap
+    STA [DemoJoy1Tap], Y                ; Store joy 1 input into new address.
+    LDA <DemoJoy1Tap
     CMP #$FE
     BNE RecordDemoInputsJ2Tap
-    LDA <(DemoInputsRecJ1Tap + 1)
+    LDA <(DemoJoy1Tap + 1)
     CMP #$61
     BNE RecordDemoInputsJ2Tap
     LDA #$FF                            ; Address is $6200 - 2.
-    STA [DemoInputsRecJ1Tap], Y         ; [DemoInputsRecJ1Tap][1] = $FF
+    STA [DemoJoy1Tap], Y                ; [DemoJoy1Tap][1] = $FF
     JMP RecordDemoInputsBufferOverflow
 
 RecordDemoInputsJ2Tap:
     LDY #$00
     LDA <Joypad2Tapped
-    CMP [DemoInputsRecJ2Tap], Y
+    CMP [DemoJoy2Tap], Y
     BNE IncJ2TapAddr
     INY
-    LDA [DemoInputsRecJ2Tap], Y
+    LDA [DemoJoy2Tap], Y
     CMP #$FF
     BEQ IncJ2TapAddr
-    LDA [DemoInputsRecJ2Tap], Y
+    LDA [DemoJoy2Tap], Y
     CLC
     ADC #$01
-    STA [DemoInputsRecJ2Tap], Y
+    STA [DemoJoy2Tap], Y
     BNE RecordDemoInputsJ1Prs
 IncJ2TapAddr:
     LDY #$00
-    LDA <DemoInputsRecJ2Tap
+    LDA <DemoJoy2Tap
     CLC
     ADC #$02
-    STA <DemoInputsRecJ2Tap
-    LDA <(DemoInputsRecJ2Tap + 1)
+    STA <DemoJoy2Tap
+    LDA <(DemoJoy2Tap + 1)
     ADC #$00
-    STA <(DemoInputsRecJ2Tap + 1)
+    STA <(DemoJoy2Tap + 1)
     LDA <Joypad2Tapped
-    STA [DemoInputsRecJ2Tap], Y
-    LDA <DemoInputsRecJ2Tap
+    STA [DemoJoy2Tap], Y
+    LDA <DemoJoy2Tap
     CMP #$FE
     BNE RecordDemoInputsJ1Prs
-    LDA <(DemoInputsRecJ2Tap + 1)
+    LDA <(DemoJoy2Tap + 1)
     CMP #$63
     BNE RecordDemoInputsJ1Prs
     LDA #$FF
-    STA [DemoInputsRecJ2Tap], Y
+    STA [DemoJoy2Tap], Y
     JMP RecordDemoInputsBufferOverflow
 
 RecordDemoInputsJ1Prs:
     LDY #$00
     LDA <Joypad1Pressed
-    CMP [DemoInputsRecJ1Prs], Y
+    CMP [DemoJoy1Prs], Y
     BNE IncJ1PrsAddr
     INY
-    LDA [DemoInputsRecJ1Prs], Y
+    LDA [DemoJoy1Prs], Y
     CMP #$FF
     BEQ IncJ1PrsAddr
-    LDA [DemoInputsRecJ1Prs], Y
+    LDA [DemoJoy1Prs], Y
     CLC
     ADC #$01
-    STA [DemoInputsRecJ1Prs], Y
+    STA [DemoJoy1Prs], Y
     BNE RecordDemoInputsJ2Prs
 IncJ1PrsAddr:
     LDY #$00
-    LDA <DemoInputsRecJ1Prs
+    LDA <DemoJoy1Prs
     CLC
     ADC #$02
-    STA <DemoInputsRecJ1Prs
-    LDA <(DemoInputsRecJ1Prs + 1)
+    STA <DemoJoy1Prs
+    LDA <(DemoJoy1Prs + 1)
     ADC #$00
-    STA <(DemoInputsRecJ1Prs + 1)
+    STA <(DemoJoy1Prs + 1)
     LDA <Joypad1Pressed
-    STA [DemoInputsRecJ1Prs], Y
-    LDA <DemoInputsRecJ1Prs
+    STA [DemoJoy1Prs], Y
+    LDA <DemoJoy1Prs
     CMP #$FE
     BNE RecordDemoInputsJ2Prs
-    LDA <(DemoInputsRecJ1Prs + 1)
+    LDA <(DemoJoy1Prs + 1)
     CMP #$65
     BNE RecordDemoInputsJ2Prs
     LDA #$FF
-    STA [DemoInputsRecJ1Prs], Y
+    STA [DemoJoy1Prs], Y
     JMP RecordDemoInputsBufferOverflow
 
 RecordDemoInputsJ2Prs:
     LDY #$00
     LDA <Joypad2Pressed
-    CMP [DemoInputsRecJ2Prs], Y
+    CMP [DemoJoy2Prs], Y
     BNE IncJ2PrsAddr
     INY
-    LDA [DemoInputsRecJ2Prs], Y
+    LDA [DemoJoy2Prs], Y
     CMP #$FF
     BEQ IncJ2PrsAddr
-    LDA [DemoInputsRecJ2Prs], Y
+    LDA [DemoJoy2Prs], Y
     CLC
     ADC #$01
-    STA [DemoInputsRecJ2Prs], Y
+    STA [DemoJoy2Prs], Y
     BNE ReturnFromRecordDemoInputs
 IncJ2PrsAddr:
     LDY #$00
-    LDA <DemoInputsRecJ2Prs
+    LDA <DemoJoy2Prs
     CLC
     ADC #$02
-    STA <DemoInputsRecJ2Prs
-    LDA <(DemoInputsRecJ2Prs + 1)
+    STA <DemoJoy2Prs
+    LDA <(DemoJoy2Prs + 1)
     ADC #$00
-    STA <(DemoInputsRecJ2Prs + 1)
+    STA <(DemoJoy2Prs + 1)
     LDA <Joypad2Pressed
-    STA [DemoInputsRecJ2Prs], Y
-    LDA <DemoInputsRecJ2Prs
+    STA [DemoJoy2Prs], Y
+    LDA <DemoJoy2Prs
     CMP #$FE
     BNE ReturnFromRecordDemoInputs
-    LDA <(DemoInputsRecJ2Prs + 1)
+    LDA <(DemoJoy2Prs + 1)
     CMP #$67
     BNE ReturnFromRecordDemoInputs
     LDA #$FF
-    STA [DemoInputsRecJ2Prs], Y
+    STA [DemoJoy2Prs], Y
     JMP RecordDemoInputsBufferOverflow
 
 ReturnFromRecordDemoInputs:
@@ -9836,7 +9836,7 @@ SfxQueueCleanupLoop:
     LDA #%00011110                      ; Show background and sprites everywhere.
     STA <PpuMaskVal                     ; Store as ppu mask value.
 
-    LDA #$06
+    LDA #BANK_6
     JSR SetFirstPrgBank                 ; Set first PRG bank to bank #6.
 
     LDA #%00011110                      ; Vertical Mirroring; Switchable first bank; Separate 4k CHR banks.
