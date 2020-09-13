@@ -125,6 +125,16 @@ NmiFinishedFlag         = $90           ; Boolean 0 / X.
 
 OamUsedSize             = $97
 
+DemoJoy1Tap             = $B0
+DemoJoy2Tap             = $B2
+DemoJoy1Prs             = $B4
+DemoJoy2Prs             = $B6
+
+DemoJoy1TapCntr         = $B9
+DemoJoy2TapCntr         = $BA
+DemoJoy1PrsCntr         = $BB
+DemoJoy2PrsCntr         = $BC
+
 SfxQueueWriteIdx        = $DA
 SfxQueueReadIdx         = $DB
 SfxQueue                = $DC
@@ -150,6 +160,6 @@ PpuCtrlVal              = $FF
     .include "bank4.src"
     .include "bank5.src"
     .include "bank6.src"
-    .include "bank7.src"
+    .include "bank7.src"                ; Main
 
     .incbin "chr.bin"

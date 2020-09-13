@@ -1195,7 +1195,7 @@ L7_C83E:
     BNE L7_C861 ; #C854
     LDA #BANK_1
     JSR SetFirstPrgBank
-    JSR $9000 ; #C85B
+    JSR SetNextDemoInput
 L7_C85E:
     JMP L7_C77B ; #C85E
 
