@@ -5831,9 +5831,9 @@ L7_E590:                                ; Do we load new "screen" here? Like lev
     STA <$FD ; #E5AE
     STA $0500 ; #E5B0
     STA $0501 ; #E5B3
-    LDA $E6AA, X ; #E5B6                ; TODO continue
+    LDA (L7_E6AB - 1), X ; #E5B6
     STA <NextChrBank0 ; #E5B9
-    LDA $E6C2, X ; #E5BB
+    LDA $E6C2, X ; #E5BB                ; TODO continue.
     STA <NextChrBank1 ; #E5BE
     LDA $E70A, X ; #E5C0
     STA <PalettesAnimType ; #E5C3
@@ -5921,8 +5921,8 @@ L7_E67B:
 
 L7_E693:
     .db $00, $06, $00, $00, $00, $07, $00, $00, $00, $00, $00, $00, $06, $01, $00, $00, $07, $05, $00, $07, $07, $07, $00, $04
-    ; #E6AA
-; Array of CHR banks 0.
+
+L7_E6AB:                                ; Array of CHR banks 0.
     .db $80, $8C, $81, $82, $82, $89, $83, $85, $84, $8A, $84, $87, $8A, $85, $87, $87, $8A, $8C, $80, $89, $88, $8B, $82, $89
     ; #E6C2
 ; Array of CHR banks 1.
@@ -7857,6 +7857,9 @@ L7_F1E7:
 L7_F1EF:
     CLC ; #F1EF
     RTS ; #F1F0
+
+
+L7_F1F1:
     STA <$40 ; #F1F1
     STY <$41 ; #F1F3
     JSR L7_F2C5 ; #F1F5
@@ -8011,6 +8014,7 @@ L7_F31D:
     RTS
 
 
+L7_F328:
     LDY #$00 ; #F328
     JSR L7_F345 ; #F32A
     STA <$01 ; #F32D
@@ -8049,6 +8053,8 @@ L7_F364:
 L7_F369:
     LDA #$FF ; #F369
     RTS ; #F36B
+
+L7_F36C:
     JSR L7_E817 ; #F36C
     PHP ; #F36F
     LDA #BANK_6 ; #F370
@@ -8296,6 +8302,8 @@ L7_F4F1:
 L7_F50B:
     RTS ; #F50B
     JSR L7_F4DE ; #F50C
+
+L7_F50F:
     LDA $04F0, Y ; #F50F
     STA <$05 ; #F512
     LDA $0500, Y ; #F514
@@ -8866,6 +8874,8 @@ L7_F912:
 L7_F926:
     LDY <$00 ; #F926
     JMP L7_F8A1 ; #F928
+
+L7_F92B:
     LDY #$00 ; #F92B
     LDA $04D0, Y ; #F92D
     BPL L7_F943 ; #F930
@@ -8904,6 +8914,8 @@ L7_F973:
 L7_F974:
     LDY <$10 ; #F974
     RTS ; #F976
+
+L7_F977:
     STX <$05 ; #F977
     LDY #$02 ; #F979
 L7_F97B:

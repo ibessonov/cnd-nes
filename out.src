@@ -125,14 +125,13 @@ DemoJoy2Tap             = $B2
 DemoJoy1Prs             = $B4
 DemoJoy2Prs             = $B6
 DemoStatus              = $B8           ; 0 / 1 / $FF
-DemoIdx                 = $BD
-DemoWaitCntrLsb         = $BE
-DemoWaitCntrMsb         = $BF
-
 DemoJoy1TapCntr         = $B9
 DemoJoy2TapCntr         = $BA
 DemoJoy1PrsCntr         = $BB
 DemoJoy2PrsCntr         = $BC
+DemoIdx                 = $BD
+DemoWaitCntrLsb         = $BE
+DemoWaitCntrMsb         = $BF
 
 SfxQueueWriteIdx        = $DA
 SfxQueueReadIdx         = $DB
