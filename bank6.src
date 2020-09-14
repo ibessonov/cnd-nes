@@ -923,13 +923,14 @@ L6_8679:
     STA $04E0, X ; #868C
 L6_868F:
     RTS ; #868F
-    BRK ; #8690
+
+    .db $00 ; #8690
     .db $AB ; #8691
     .db $AB ; #8692
     .db $AB ; #8693
-    BRK ; #8694
-    BRK ; #8695
-    BRK ; #8696
+    .db $00 ; #8694
+    .db $00 ; #8695
+    .db $00 ; #8696
     .db $04 ; #8697
     .db $FF ; #8698
     .db $FF ; #8699
@@ -937,6 +938,7 @@ L6_868F:
     .db $04 ; #869B
     .db $04 ; #869C
     .db $04 ; #869D
+
     LDA $04F0, X ; #869E
     SEC ; #86A1
     SBC <$FC ; #86A2
@@ -1564,10 +1566,12 @@ L6_8B4F:
     ADC #$00 ; #8B69
     STA $0500, X ; #8B6B
     RTS ; #8B6E
+
     .db $0C ; #8B6F
     .db $FC ; #8B70
-    BRK ; #8B71
+    .db $00 ; #8B71
     .db $FF ; #8B72
+
     JSR $F21E ; #8B73
     LDA $04F0, X ; #8B76
     CMP #$D0 ; #8B79
@@ -1597,30 +1601,38 @@ L6_8B93:
     LDA #$00 ; #8BA4
     STA $04D0, X ; #8BA6
     RTS ; #8BA9
+
     .db $64 ; #8BAA
-    STX $312F ; #8BAB
+    .db $8E ; #8BAB
+    .db $2F ; #8BAC
+    .db $31 ; #8BAD
     .db $80 ; #8BAE
-    STA [$6A, X] ; #8BAF
-    AND <$2E ; #8BB1
+    .db $81 ; #8BAF
+    .db $6A ; #8BB0
+    .db $25 ; #8BB1
+    .db $2E ; #8BB2
     .db $2F ; #8BB3
     .db $3C ; #8BB4
     .db $5F ; #8BB5
     .db $3C ; #8BB6
     .db $3C ; #8BB7
-    RTS ; #8BB8
-    RTS ; #8BB9
-    ADC [$10, X] ; #8BBA
+    .db $60 ; #8BB8
+    .db $60 ; #8BB9
+    .db $61 ; #8BBA
+    .db $10 ; #8BBB
     .db $3C ; #8BBC
     .db $3C ; #8BBD
-    BRK ; #8BBE
-    BRK ; #8BBF
-    BRK ; #8BC0
-    BRK ; #8BC1
-    BRK ; #8BC2
-    BRK ; #8BC3
-    STY <$80, X ; #8BC4
-    BRK ; #8BC6
-    BRK ; #8BC7
+    .db $00 ; #8BBE
+    .db $00 ; #8BBF
+    .db $00 ; #8BC0
+    .db $00 ; #8BC1
+    .db $00 ; #8BC2
+    .db $00 ; #8BC3
+    .db $94 ; #8BC4
+    .db $80 ; #8BC5
+    .db $00 ; #8BC6
+    .db $00 ; #8BC7
+
     LDA $04D0, X ; #8BC8
     AND #$0F ; #8BCB
     BNE L6_8BDD ; #8BCD
@@ -2309,34 +2321,44 @@ L6_912D:
     JSR $F379 ; #9135
 L6_9138:
     RTS ; #9138
-    BRK ; #9139
-    BRK ; #913A
-    AND <$C5 ; #913B
+
+    .db $00 ; #9139
+    .db $00 ; #913A
+    .db $25 ; #913B
+    .db $C5 ; #913C
     .db $1F ; #913D
     .db $1F ; #913E
-    CMP <$25 ; #913F
-    BRK ; #9141
-    BRK ; #9142
-    CMP <$25 ; #9143
+    .db $C5 ; #913F
+    .db $25 ; #9140
+    .db $00 ; #9141
+    .db $00 ; #9142
+    .db $C5 ; #9143
+    .db $25 ; #9144
     .db $1F ; #9145
     .db $1F ; #9146
-    AND <$C5 ; #9147
-    BRK ; #9149
-    BRK ; #914A
-    BRK ; #914B
+    .db $25 ; #9147
+    .db $C5 ; #9148
+    .db $00 ; #9149
+    .db $00 ; #914A
+    .db $00 ; #914B
     .db $03 ; #914C
-    ORA [$02, X] ; #914D
+    .db $01 ; #914D
+    .db $02 ; #914E
     .db $02 ; #914F
     .db $02 ; #9150
     .db $02 ; #9151
-    ORA [$03, X] ; #9152
-    BRK ; #9154
+    .db $01 ; #9152
+    .db $03 ; #9153
+    .db $00 ; #9154
     .db $02 ; #9155
-    ORA [$02, X] ; #9156
+    .db $01 ; #9156
+    .db $02 ; #9157
     .db $02 ; #9158
-    ORA [$02, X] ; #9159
-    BRK ; #915B
+    .db $01 ; #9159
+    .db $02 ; #915A
+    .db $00 ; #915B
     .db $03 ; #915C
+
     LDA $04D0, X ; #915D
     AND #$0F ; #9160
     BNE L6_9177 ; #9162
@@ -2666,44 +2688,57 @@ L6_93EB:
     RTS ; #9423
 L6_9424:
     JMP L6_9346 ; #9424
-    PHP ; #9427
-    BRK ; #9428
-    PHP ; #9429
-    BRK ; #942A
-    PHP ; #942B
-    BRK ; #942C
-    BRK ; #942D
-    BRK ; #942E
-    BRK ; #942F
-    BRK ; #9430
-    BRK ; #9431
-    BRK ; #9432
+
+    .db $08 ; #9427
+    .db $00 ; #9428
+    .db $08 ; #9429
+    .db $00 ; #942A
+    .db $08 ; #942B
+    .db $00 ; #942C
+    .db $00 ; #942D
+    .db $00 ; #942E
+    .db $00 ; #942F
+    .db $00 ; #9430
+    .db $00 ; #9431
+    .db $00 ; #9432
     .db $44 ; #9433
     .db $03 ; #9434
-    BRK ; #9435
+    .db $00 ; #9435
     .db $04 ; #9436
     .db $9E ; #9437
     .db $04 ; #9438
     .db $9E ; #9439
     .db $04 ; #943A
-    BRK ; #943B
+    .db $00 ; #943B
     .db $04 ; #943C
     .db $44 ; #943D
     .db $03 ; #943E
-    BRK ; #943F
-    ORA [$33, X] ; #9440
-    ORA [$80, X] ; #9442
-    ORA [$80, X] ; #9444
-    ORA [$33, X] ; #9446
-    ORA [$00, X] ; #9448
-    ORA [$BD, X] ; #944A
+    .db $00 ; #943F
+    .db $01 ; #9440
+    .db $33 ; #9441
+    .db $01 ; #9442
+    .db $80 ; #9443
+    .db $01 ; #9444
+    .db $80 ; #9445
+    .db $01 ; #9446
+    .db $33 ; #9447
+    .db $01 ; #9448
+    .db $00 ; #9449
+    .db $01 ; #944A
+    .db $BD ; #944B
     .db $80 ; #944C
-    ORA <$29 ; #944D
-    ORA [$F0, X] ; #944F
-    ASL <$20 ; #9451
-    ASL $4CF2, X ; #9453
-    NOP ; #9456
+    .db $05 ; #944D
+    .db $29 ; #944E
+    .db $01 ; #944F
+    .db $F0 ; #9450
+    .db $06 ; #9451
+    .db $20 ; #9452
+    .db $1E ; #9453
+    .db $F2 ; #9454
+    .db $4C ; #9455
+    .db $EA ; #9456
     .db $F2 ; #9457
+
     JSR $F23C ; #9458
     JMP $F2EA ; #945B
     LDA $04D0, X ; #945E
@@ -2871,26 +2906,35 @@ L6_95C1:
     LDA #$00 ; #95C1
     STA $04D0, X ; #95C3
     RTS ; #95C6
-    INC $0000, X ; #95C7
-    BRK ; #95CA
-    BRK ; #95CB
+
+    .db $FE ; #95C7
+    .db $00 ; #95C8
+    .db $00 ; #95C9
+    .db $00 ; #95CA
+    .db $00 ; #95CB
     .db $04 ; #95CC
-    BRK ; #95CD
-    ASL <$00 ; #95CE
-    ASL A ; #95D0
+    .db $00 ; #95CD
+    .db $06 ; #95CE
+    .db $00 ; #95CF
+    .db $0A ; #95D0
     .db $0C ; #95D1
-    ORA [$06, X] ; #95D2
-    ORA [$06, X] ; #95D4
-    BRK ; #95D6
+    .db $01 ; #95D2
+    .db $06 ; #95D3
+    .db $01 ; #95D4
+    .db $06 ; #95D5
+    .db $00 ; #95D6
     .db $02 ; #95D7
-    BRK ; #95D8
+    .db $00 ; #95D8
     .db $03 ; #95D9
     .db $02 ; #95DA
     .db $04 ; #95DB
-    ORA [$06, X] ; #95DC
-    ORA [$07, X] ; #95DE
+    .db $01 ; #95DC
+    .db $06 ; #95DD
+    .db $01 ; #95DE
+    .db $07 ; #95DF
     .db $03 ; #95E0
     .db $03 ; #95E1
+
     LDA $04D0, X ; #95E2
     AND #$0F ; #95E5
     BNE L6_95FE ; #95E7
@@ -3041,10 +3085,12 @@ L6_96CF:
     LDA #$24 ; #971F
     STA $04E0, Y ; #9721
     RTS ; #9724
-    PHP ; #9725
-    BRK ; #9726
-    SED ; #9727
+
+    .db $08 ; #9725
+    .db $00 ; #9726
+    .db $F8 ; #9727
     .db $FF ; #9728
+
     LDA $04D0, X ; #9729
     AND #$0F ; #972C
     BNE L6_973B ; #972E
@@ -4005,10 +4051,13 @@ L6_9E95:
     LDA #$2B ; #9EE2
     STA $04E0, Y ; #9EE4
     RTS ; #9EE7
+
     .db $12 ; #9EE8
-    BRK ; #9EE9
-    INC $BDFF ; #9EEA
-    BNE L6_9EF3 ; #9EED
+    .db $00 ; #9EE9
+    .db $EE ; #9EEA
+    .db $FF ; #9EEB
+
+    LDA $04D0, X ; #9EEC
     AND #$0F ; #9EEF
     BNE L6_9EFE ; #9EF1
 L6_9EF3:
@@ -4217,16 +4266,20 @@ L6_A039:
     DEC $04A0, X ; #A0A0
     BPL L6_A02C ; #A0A3
     RTS ; #A0A5
+
     .db $FC ; #A0A6
     .db $FF ; #A0A7
     .db $FC ; #A0A8
     .db $FF ; #A0A9
     .db $FC ; #A0AA
     .db $FF ; #A0AB
-    BIT $2E00 ; #A0AC
-    BRK ; #A0AF
+    .db $2C ; #A0AC
+    .db $00 ; #A0AD
+    .db $2E ; #A0AE
+    .db $00 ; #A0AF
     .db $2F ; #A0B0
-    BRK ; #A0B1
+    .db $00 ; #A0B1
+
     LDA $04D0, X ; #A0B2
     AND #$0F ; #A0B5
     BNE L6_A0C6 ; #A0B7
@@ -4347,13 +4400,16 @@ L6_A1A7:
     DEC $04D0, X ; #A1BB
 L6_A1BE:
     RTS ; #A1BE
+
     .db $1C ; #A1BF
-    BRK ; #A1C0
-    CPX <$FF ; #A1C1
+    .db $00 ; #A1C0
+    .db $E4 ; #A1C1
+    .db $FF ; #A1C2
     .db $0C ; #A1C3
-    BRK ; #A1C4
+    .db $00 ; #A1C4
     .db $F4 ; #A1C5
     .db $FF ; #A1C6
+
     LDA $04D0, X ; #A1C7
     AND #$0F ; #A1CA
     BNE L6_A1E3 ; #A1CC
@@ -5169,11 +5225,18 @@ L6_A81B:
     RTS ; #A81E
 L6_A81F:
     JMP $F25A ; #A81F
+
     .db $02 ; #A822
-    BRK ; #A823
-    INC $20FF, X ; #A824
-    CMP <$B3, X ; #A827
-    JSR L6_B35A ; #A829
+    .db $00 ; #A823
+    .db $FE ; #A824
+    .db $FF ; #A825
+    .db $20 ; #A826
+    .db $D5 ; #A827
+    .db $B3 ; #A828
+    .db $20 ; #A829
+    .db $5A ; #A82A
+    .db $B3 ; #A82B
+
     LDA $04D0, X ; #A82C
     AND #$0F ; #A82F
     BNE L6_A844 ; #A831
@@ -6071,24 +6134,32 @@ L6_AF31:
     STA $0540, X ; #AF4D
 L6_AF50:
     JMP L6_B4C1 ; #AF50
+
     .db $3C ; #AF53
-    SEI ; #AF54
-    SEI ; #AF55
-    SEI ; #AF56
+    .db $78 ; #AF54
+    .db $78 ; #AF55
+    .db $78 ; #AF56
     .db $C3 ; #AF57
-    ROR A ; #AF58
-    ROR A ; #AF59
+    .db $6A ; #AF58
+    .db $6A ; #AF59
     .db $C3 ; #AF5A
-    BRK ; #AF5B
-    ORA [$01, X] ; #AF5C
-    BRK ; #AF5E
+    .db $00 ; #AF5B
+    .db $01 ; #AF5C
+    .db $01 ; #AF5D
+    .db $00 ; #AF5E
     .db $27 ; #AF5F
-    STX <$6A, Y ; #AF60
-    CMP $FEFE, Y ; #AF62
-    ORA [$01, X] ; #AF65
+    .db $96 ; #AF60
+    .db $6A ; #AF61
+    .db $D9 ; #AF62
+    .db $FE ; #AF63
+    .db $FE ; #AF64
+    .db $01 ; #AF65
+    .db $01 ; #AF66
     .db $33 ; #AF67
-    AND [$21, X] ; #AF68
+    .db $21 ; #AF68
+    .db $21 ; #AF69
     .db $33 ; #AF6A
+
     JSR L6_B3D5 ; #AF6B
     JMP L6_B35A ; #AF6E
     JSR L6_B3D5 ; #AF71
@@ -6349,7 +6420,7 @@ L6_B143:
     STA <$E4 ; #B175
     AND #$03 ; #B177
     TAY ; #B179
-    LDA $B2FD, Y ; #B17A
+    LDA L6_B2FD, Y ; #B17A
     STA $0480, X ; #B17D
     INC $04D0, X ; #B180
     JSR L6_B350 ; #B183
@@ -6527,14 +6598,18 @@ L6_B2E9:
     LDA #$00 ; #B2F7
     STA $04D0, X ; #B2F9
     RTS ; #B2FC
+
+L6_B2FD:
     .db $60 ; #B2FD
     .db $90 ; #B2FE
     .db $90 ; #B2FF
     .db $C0 ; #B300
+
     .db $00 ; #B301
     .db $0A ; #B302
     .db $0A ; #B303
     .db $14 ; #B304
+
     .db $64 ; #B305
     .db $1E ; #B306
     .db $14 ; #B307
@@ -6802,29 +6877,31 @@ L6_B49C:
 L6_B4A7:
     LDX <$00 ; #B4A7
     RTS ; #B4A9
+
     .db $04 ; #B4AA
-    BRK ; #B4AB
-    BRK ; #B4AC
-    BRK ; #B4AD
-    PHP ; #B4AE
-    BRK ; #B4AF
-    BRK ; #B4B0
-    BRK ; #B4B1
-    BRK ; #B4B2
-    BRK ; #B4B3
+    .db $00 ; #B4AB
+    .db $00 ; #B4AC
+    .db $00 ; #B4AD
+    .db $08 ; #B4AE
+    .db $00 ; #B4AF
+    .db $00 ; #B4B0
+    .db $00 ; #B4B1
+    .db $00 ; #B4B2
+    .db $00 ; #B4B3
     .db $0C ; #B4B4
-    BRK ; #B4B5
+    .db $00 ; #B4B5
     .db $FF ; #B4B6
     .db $FF ; #B4B7
     .db $FF ; #B4B8
     .db $FF ; #B4B9
-    BRK ; #B4BA
-    BRK ; #B4BB
-    BRK ; #B4BC
+    .db $00 ; #B4BA
+    .db $00 ; #B4BB
+    .db $00 ; #B4BC
     .db $FF ; #B4BD
     .db $FF ; #B4BE
-    BRK ; #B4BF
-    BRK ; #B4C0
+    .db $00 ; #B4BF
+    .db $00 ; #B4C0
+
 L6_B4C1:
     LDA #$00 ; #B4C1
     STA <$00 ; #B4C3
@@ -9592,21 +9669,23 @@ L6_BD3C:
     INC $FFE1 ; #BFE1
     CLD ; #BFE4
     JMP $FE00 ; #BFE5
-    BRK ; #BFE8
-    BRK ; #BFE9
-    BRK ; #BFEA
-    BRK ; #BFEB
-    BRK ; #BFEC
-    BRK ; #BFED
-    BRK ; #BFEE
-    BRK ; #BFEF
-    BRK ; #BFF0
-    BRK ; #BFF1
-    LDA $337F, Y ; #BFF2
+    .db $00 ; #BFE8
+    .db $00 ; #BFE9
+    .db $00 ; #BFEA
+    .db $00 ; #BFEB
+    .db $00 ; #BFEC
+    .db $00 ; #BFED
+    .db $00 ; #BFEE
+    .db $00 ; #BFEF
+    .db $00 ; #BFF0
+    .db $00 ; #BFF1
+    .db $B9 ; #BFF2
+    .db $7F ; #BFF3
+    .db $33 ; #BFF4
     .db $04 ; #BFF5
-    BRK ; #BFF6
-    BRK ; #BFF7
-    PHP ; #BFF8
+    .db $00 ; #BFF6
+    .db $00 ; #BFF7
+    .db $08 ; #BFF8
     .db $89 ; #BFF9
     .db $00 ; #BFFA
     .db $C0 ; #BFFB
