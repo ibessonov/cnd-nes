@@ -7707,6 +7707,8 @@ L7_F0CA:
     AND #$BF ; #F0CD
     STA $0400, X ; #F0CF
     RTS ; #F0D2
+
+L7_F0D3:
     STA <$40 ; #F0D3
     STY <$41 ; #F0D5
     JSR L7_F25A ; #F0D7
@@ -7717,6 +7719,8 @@ L7_F0CA:
     JSR L7_ED99 ; #F0E3
 L7_F0E6:
     RTS ; #F0E6
+
+L7_F0E7:
     STA <$40 ; #F0E7
     STY <$41 ; #F0E9
     JSR L7_F27F ; #F0EB
@@ -7880,6 +7884,8 @@ L7_F20D:
 L7_F215:
     CLC ; #F215
     RTS ; #F216
+
+L7_F217:
     STA <$40 ; #F217
     STY <$41 ; #F219
     JMP L7_EA8F ; #F21B
@@ -8231,12 +8237,16 @@ L7_F46A:
     STA $0480, Y ; #F498
     STA $0490, Y ; #F49B
     RTS ; #F49E
+
 L7_F49F:                                ; another wtf
     .db $0E ; #F49F
     .db $3E ; #F4A0
+
+L7_F4A1:
     .db $BD ; #F4A1
     .db $10 ; #F4A2
     .db $05 ; #F4A3
+
     SEC ; #F4A4
     SBC <ScrollY ; #F4A5
     BCS L7_F4AB ; #F4A7
@@ -8301,6 +8311,8 @@ L7_F4F1:
     ADC #$01 ; #F509
 L7_F50B:
     RTS ; #F50B
+
+L7_F50C:
     JSR L7_F4DE ; #F50C
 
 L7_F50F:

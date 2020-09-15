@@ -6,15 +6,16 @@ L6_8004:
     LDA $04D0, X ; #8004
     BPL L6_8082 ; #8007
     LDY $04E0, X ; #8009
-    LDA $80A7, Y ; #800C
+    LDA L6_80A7, Y ; #800C
     STA <$00 ; #800F
-    LDA $810C, Y ; #8011
+    LDA L6_810C, Y ; #8011
     STA <$01 ; #8014
     LDA #$80 ; #8016
     PHA ; #8018
     LDA #$1E ; #8019
     PHA ; #801B
     JMP [$0000] ; #801C
+
     LDA $0570, X ; #801F
     AND #$40 ; #8022
     BEQ L6_8029 ; #8024
@@ -23,7 +24,7 @@ L6_8029:
     LDA $04D0, X ; #8029
     AND #$40 ; #802C
     BEQ L6_8082 ; #802E
-    JSR $F92B ; #8030
+    JSR L7_F92B ; #8030
     BCS L6_8082 ; #8033
     LDA $005E, Y ; #8035
     BNE L6_8082 ; #8038
@@ -80,208 +81,213 @@ L6_808E:
     CMP #$28 ; #80A0
     BEQ L6_808D ; #80A2
     JMP L6_8E1A ; #80A4
-    .db $71 ; #80A7
-    .db $EB ; #80A8
-    .db $38 ; #80A9
-    .db $C6 ; #80AA
-    .db $96 ; #80AB
-    .db $5D ; #80AC
-    .db $05 ; #80AD
-    .db $05 ; #80AE
-    .db $6A ; #80AF
-    .db $5E ; #80B0
-    .db $FB ; #80B1
-    .db $56 ; #80B2
-    .db $63 ; #80B3
-    .db $E9 ; #80B4
-    .db $E2 ; #80B5
-    .db $50 ; #80B6
-    .db $BC ; #80B7
-    .db $B1 ; #80B8
-    .db $56 ; #80B9
-    .db $1C ; #80BA
-    .db $63 ; #80BB
-    .db $23 ; #80BC
-    .db $3F ; #80BD
-    .db $DF ; #80BE
-    .db $0B ; #80BF
-    .db $81 ; #80C0
-    .db $E1 ; #80C1
-    .db $C7 ; #80C2
-    .db $81 ; #80C3
-    .db $1A ; #80C4
-    .db $9B ; #80C5
-    .db $A1 ; #80C6
-    .db $25 ; #80C7
-    .db $25 ; #80C8
-    .db $25 ; #80C9
-    .db $3A ; #80CA
-    .db $29 ; #80CB
-    .db $66 ; #80CC
-    .db $71 ; #80CD
-    .db $AE ; #80CE
-    .db $4C ; #80CF
-    .db $37 ; #80D0
-    .db $F1 ; #80D1
-    .db $EC ; #80D2
-    .db $B2 ; #80D3
-    .db $4B ; #80D4
-    .db $B2 ; #80D5
-    .db $B2 ; #80D6
-    .db $74 ; #80D7
-    .db $C5 ; #80D8
-    .db $9B ; #80D9
-    .db $FB ; #80DA
-    .db $FB ; #80DB
-    .db $C6 ; #80DC
-    .db $CC ; #80DD
-    .db $CC ; #80DE
-    .db $50 ; #80DF
-    .db $6B ; #80E0
-    .db $44 ; #80E1
-    .db $C8 ; #80E2
-    .db $4F ; #80E3
-    .db $69 ; #80E4
-    .db $58 ; #80E5
-    .db $77 ; #80E6
-    .db $26 ; #80E7
-    .db $6E ; #80E8
-    .db $A1 ; #80E9
-    .db $78 ; #80EA
-    .db $F5 ; #80EB
-    .db $0E ; #80EC
-    .db $21 ; #80ED
-    .db $57 ; #80EE
-    .db $51 ; #80EF
-    .db $57 ; #80F0
-    .db $90 ; #80F1
-    .db $CF ; #80F2
-    .db $97 ; #80F3
-    .db $A1 ; #80F4
-    .db $32 ; #80F5
-    .db $71 ; #80F6
-    .db $87 ; #80F7
-    .db $53 ; #80F8
-    .db $9C ; #80F9
-    .db $04 ; #80FA
-    .db $9E ; #80FB
-    .db $0F ; #80FC
-    .db $0F ; #80FD
-    .db $0F ; #80FE
-    .db $0F ; #80FF
-    .db $0F ; #8100
-    .db $0F ; #8101
-    .db $0F ; #8102
-    .db $0F ; #8103
-    .db $0F ; #8104
-    .db $0F ; #8105
-    .db $AA ; #8106
-    .db $01 ; #8107
-    .db $FB ; #8108
-    .db $D7 ; #8109
-    .db $73 ; #810A
-    .db $B5 ; #810B
-    .db $81 ; #810C
-    .db $81 ; #810D
-    .db $8F ; #810E
-    .db $8F ; #810F
-    .db $90 ; #8110
-    .db $91 ; #8111
-    .db $92 ; #8112
-    .db $92 ; #8113
-    .db $92 ; #8114
-    .db $94 ; #8115
-    .db $94 ; #8116
-    .db $9A ; #8117
-    .db $9B ; #8118
-    .db $9B ; #8119
-    .db $95 ; #811A
-    .db $97 ; #811B
-    .db $81 ; #811C
-    .db $98 ; #811D
-    .db $99 ; #811E
-    .db $9C ; #811F
-    .db $9C ; #8120
-    .db $9D ; #8121
-    .db $9D ; #8122
-    .db $9D ; #8123
-    .db $9F ; #8124
-    .db $9F ; #8125
-    .db $A0 ; #8126
-    .db $A1 ; #8127
-    .db $8E ; #8128
-    .db $A6 ; #8129
-    .db $A4 ; #812A
-    .db $A6 ; #812B
-    .db $A3 ; #812C
-    .db $A3 ; #812D
-    .db $A3 ; #812E
-    .db $9B ; #812F
-    .db $97 ; #8130
-    .db $98 ; #8131
-    .db $A5 ; #8132
-    .db $A5 ; #8133
-    .db $A7 ; #8134
-    .db $A7 ; #8135
-    .db $A2 ; #8136
-    .db $9E ; #8137
-    .db $A0 ; #8138
-    .db $94 ; #8139
-    .db $A0 ; #813A
-    .db $A0 ; #813B
-    .db $A3 ; #813C
-    .db $A3 ; #813D
-    .db $A4 ; #813E
-    .db $A4 ; #813F
-    .db $A4 ; #8140
-    .db $A7 ; #8141
-    .db $81 ; #8142
-    .db $81 ; #8143
-    .db $B1 ; #8144
-    .db $AF ; #8145
-    .db $86 ; #8146
-    .db $8B ; #8147
-    .db $8C ; #8148
-    .db $8D ; #8149
-    .db $86 ; #814A
-    .db $8D ; #814B
-    .db $A8 ; #814C
-    .db $A9 ; #814D
-    .db $A9 ; #814E
-    .db $AA ; #814F
-    .db $AA ; #8150
-    .db $AC ; #8151
-    .db $AC ; #8152
-    .db $AC ; #8153
-    .db $AC ; #8154
-    .db $AC ; #8155
-    .db $AC ; #8156
-    .db $AC ; #8157
-    .db $AE ; #8158
-    .db $AE ; #8159
-    .db $AF ; #815A
-    .db $AF ; #815B
-    .db $B0 ; #815C
-    .db $B1 ; #815D
-    .db $B2 ; #815E
-    .db $85 ; #815F
-    .db $86 ; #8160
-    .db $88 ; #8161
-    .db $88 ; #8162
-    .db $88 ; #8163
-    .db $88 ; #8164
-    .db $88 ; #8165
-    .db $88 ; #8166
-    .db $88 ; #8167
-    .db $88 ; #8168
-    .db $88 ; #8169
-    .db $88 ; #816A
-    .db $88 ; #816B
-    .db $89 ; #816C
-    .db $89 ; #816D
-    .db $81 ; #816E
-    .db $8B ; #816F
-    .db $8D ; #8170
+
+L6_80A7:
+    .db LOW(L6_8171)
+    .db LOW(L6_81EB)
+    .db LOW(L6_8F38)
+    .db LOW(L6_8FC6)
+    .db LOW(L6_9096)
+    .db LOW(L6_915D)
+    .db LOW(L6_9205)
+    .db LOW(L6_9205)
+    .db LOW(L6_926A)
+    .db LOW(L6_945E)
+    .db LOW(L6_94FB)
+    .db LOW(L6_9A56)
+    .db LOW(L6_9B63)
+    .db LOW(L6_9BE9)
+    .db LOW(L6_95E2)
+    .db LOW(L6_9750)
+    .db LOW(L6_81BC)
+    .db LOW(L6_98B1)
+    .db LOW(L6_9956)
+    .db LOW(L6_9C1C)
+    .db LOW(L6_9C63)
+    .db LOW(L6_9D23)
+    .db LOW(L6_9D3F)
+    .db LOW(L6_9DDF)
+    .db LOW(L6_9F0B)
+    .db LOW(L6_9F81)
+    .db LOW(L6_A0E1)
+    .db LOW(L6_A1C7)
+    .db LOW(L6_8E81)
+    .db LOW(L6_A61A)
+    .db LOW(L6_A49B)
+    .db LOW(L6_A6A1)
+    .db LOW(L6_A325)
+    .db LOW(L6_A325)
+    .db LOW(L6_A325)
+    .db LOW(L6_9B3A)
+    .db LOW(L6_9729)
+    .db LOW(L6_9866)
+    .db LOW(L6_A571)
+    .db LOW(L6_A5AE)
+    .db LOW(L6_A74C)
+    .db LOW(L6_A737)
+    .db LOW(L6_A2F1)
+    .db LOW(L6_9EEC)
+    .db LOW(L6_A0B2)
+    .db LOW(L6_944B)
+    .db LOW(L6_A0B2)
+    .db LOW(L6_A0B2)
+    .db LOW(L6_A374)
+    .db LOW(L6_A3C5)
+    .db LOW(L6_A49B)
+    .db LOW(L6_A4FB)
+    .db LOW(L6_A4FB)
+    .db LOW(L6_A7C6)
+    .db LOW(L6_81CC)
+    .db LOW(L6_81CC)
+    .db LOW(L6_B150)
+    .db LOW(L6_AF6B)
+    .db LOW(L6_8644)
+    .db LOW(L6_8BC8)
+    .db LOW(L6_8C4F)
+    .db LOW(L6_8D69)
+    .db LOW(L6_8658)
+    .db LOW(L6_8D77)
+    .db LOW(L6_A826)
+    .db LOW(L6_A96E)
+    .db LOW(L6_A9A1)
+    .db LOW(L6_AA78)
+    .db LOW(L6_AAF5)
+    .db LOW(L6_AC0E)
+    .db LOW(L6_AC21)
+    .db LOW(L6_AC57)
+    .db LOW(L6_AC51)
+    .db LOW(L6_AC57)
+    .db LOW(L6_AC90)
+    .db LOW(L6_ACCF)
+    .db LOW(L6_AE97)
+    .db LOW(L6_AEA1)
+    .db LOW(L6_AF32)
+    .db LOW(L6_AF71)
+    .db LOW(L6_B087)
+    .db LOW(L6_B153)
+    .db LOW(L6_B29C)
+    .db LOW(L6_8504)
+    .db LOW(L6_869E)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_880F)
+    .db LOW(L6_88AA)
+    .db LOW(L6_8901)
+    .db LOW(L6_89FB)
+    .db LOW(L6_81D7)
+    .db LOW(L6_8B73)
+    .db LOW(L6_8DB5)
+
+L6_810C:
+    .db HIGH(L6_8171)
+    .db HIGH(L6_81EB)
+    .db HIGH(L6_8F38)
+    .db HIGH(L6_8FC6)
+    .db HIGH(L6_9096)
+    .db HIGH(L6_915D)
+    .db HIGH(L6_9205)
+    .db HIGH(L6_9205)
+    .db HIGH(L6_926A)
+    .db HIGH(L6_945E)
+    .db HIGH(L6_94FB)
+    .db HIGH(L6_9A56)
+    .db HIGH(L6_9B63)
+    .db HIGH(L6_9BE9)
+    .db HIGH(L6_95E2)
+    .db HIGH(L6_9750)
+    .db HIGH(L6_81BC)
+    .db HIGH(L6_98B1)
+    .db HIGH(L6_9956)
+    .db HIGH(L6_9C1C)
+    .db HIGH(L6_9C63)
+    .db HIGH(L6_9D23)
+    .db HIGH(L6_9D3F)
+    .db HIGH(L6_9DDF)
+    .db HIGH(L6_9F0B)
+    .db HIGH(L6_9F81)
+    .db HIGH(L6_A0E1)
+    .db HIGH(L6_A1C7)
+    .db HIGH(L6_8E81)
+    .db HIGH(L6_A61A)
+    .db HIGH(L6_A49B)
+    .db HIGH(L6_A6A1)
+    .db HIGH(L6_A325)
+    .db HIGH(L6_A325)
+    .db HIGH(L6_A325)
+    .db HIGH(L6_9B3A)
+    .db HIGH(L6_9729)
+    .db HIGH(L6_9866)
+    .db HIGH(L6_A571)
+    .db HIGH(L6_A5AE)
+    .db HIGH(L6_A74C)
+    .db HIGH(L6_A737)
+    .db HIGH(L6_A2F1)
+    .db HIGH(L6_9EEC)
+    .db HIGH(L6_A0B2)
+    .db HIGH(L6_944B)
+    .db HIGH(L6_A0B2)
+    .db HIGH(L6_A0B2)
+    .db HIGH(L6_A374)
+    .db HIGH(L6_A3C5)
+    .db HIGH(L6_A49B)
+    .db HIGH(L6_A4FB)
+    .db HIGH(L6_A4FB)
+    .db HIGH(L6_A7C6)
+    .db HIGH(L6_81CC)
+    .db HIGH(L6_81CC)
+    .db HIGH(L6_B150)
+    .db HIGH(L6_AF6B)
+    .db HIGH(L6_8644)
+    .db HIGH(L6_8BC8)
+    .db HIGH(L6_8C4F)
+    .db HIGH(L6_8D69)
+    .db HIGH(L6_8658)
+    .db HIGH(L6_8D77)
+    .db HIGH(L6_A826)
+    .db HIGH(L6_A96E)
+    .db HIGH(L6_A9A1)
+    .db HIGH(L6_AA78)
+    .db HIGH(L6_AAF5)
+    .db HIGH(L6_AC0E)
+    .db HIGH(L6_AC21)
+    .db HIGH(L6_AC57)
+    .db HIGH(L6_AC51)
+    .db HIGH(L6_AC57)
+    .db HIGH(L6_AC90)
+    .db HIGH(L6_ACCF)
+    .db HIGH(L6_AE97)
+    .db HIGH(L6_AEA1)
+    .db HIGH(L6_AF32)
+    .db HIGH(L6_AF71)
+    .db HIGH(L6_B087)
+    .db HIGH(L6_B153)
+    .db HIGH(L6_B29C)
+    .db HIGH(L6_8504)
+    .db HIGH(L6_869E)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_880F)
+    .db HIGH(L6_88AA)
+    .db HIGH(L6_8901)
+    .db HIGH(L6_89FB)
+    .db HIGH(L6_81D7)
+    .db HIGH(L6_8B73)
+    .db HIGH(L6_8DB5)
+
 L6_8171:
     LDA $0420, X ; #8171
     CMP #$22 ; #8174
@@ -324,6 +330,8 @@ L6_81B6:
     STA $0056, Y ; #81B8
 L6_81BB:
     RTS ; #81BB
+
+L6_81BC:
     LDA $0420, X ; #81BC
     CMP #$25 ; #81BF
     BEQ L6_8192 ; #81C1
@@ -332,11 +340,15 @@ L6_81BB:
     CMP #$28 ; #81C7
     BEQ L6_8192 ; #81C9
     RTS ; #81CB
+
+L6_81CC:
     LDA $0400, X ; #81CC
     BMI L6_81BB ; #81CF
     LDA #$00 ; #81D1
     STA $04D0, X ; #81D3
     RTS ; #81D6
+
+L6_81D7:
     LDA $0410, X ; #81D7
     CMP #$03 ; #81DA
     BNE L6_8171 ; #81DC
@@ -346,49 +358,61 @@ L6_81BB:
     LDA #$00 ; #81E5
     STA $04D0, X ; #81E7
     RTS ; #81EA
+
+L6_81EB:
     LDY $0420, X ; #81EB
     LDA $81D9, Y ; #81EE
     STA <$00 ; #81F1
     LDA $81E0, Y ; #81F3
     STA <$01 ; #81F6
     JMP [$0000] ; #81F8
-    ORA #$35 ; #81FB
-    .db $9C ; #81FD
-    CMP [$09, X] ; #81FE
-    SED ; #8200
-    SED ; #8201
-    .db $82 ; #8202
-    .db $82 ; #8203
-    .db $83 ; #8204
-    STA <$82 ; #8205
-    STA <$85 ; #8207
+
+L6_81FB:
+    .db LOW(L6_8209)
+    .db LOW(L6_8235)
+    .db LOW(L6_839C)
+    .db LOW(L6_85C1)
+    .db LOW(L6_8209)
+    .db LOW(L6_85F8)
+    .db LOW(L6_85F8)
+L6_8202:
+    .db HIGH(L6_8209)
+    .db HIGH(L6_8235)
+    .db HIGH(L6_839C)
+    .db HIGH(L6_85C1)
+    .db HIGH(L6_8209)
+    .db HIGH(L6_85F8)
+    .db HIGH(L6_85F8)
+
 L6_8209:
     LDA $0580, X ; #8209
     AND #$03 ; #820C
     BEQ L6_8232 ; #820E
     AND #$01 ; #8210
     BEQ L6_8223 ; #8212
-    JSR $F21E ; #8214
+    JSR L7_F21E ; #8214
     JSR L6_848A ; #8217
     LDA $0400, X ; #821A
     ORA #$40 ; #821D
     STA $0400, X ; #821F
     RTS ; #8222
 L6_8223:
-    JSR $F23C ; #8223
+    JSR L7_F23C ; #8223
     JSR L6_848A ; #8226
     LDA $0400, X ; #8229
     AND #$BF ; #822C
     STA $0400, X ; #822E
     RTS ; #8231
 L6_8232:
-    JMP $F27F ; #8232
+    JMP L7_F27F ; #8232
+
+L6_8235:
     LDA $04D0, X ; #8235
     AND #$0F ; #8238
     BEQ L6_8260 ; #823A
     LDY #$01 ; #823C
     LDA #$76 ; #823E
-    JSR $F0FB ; #8240
+    JSR L7_F0FB ; #8240
     BCS L6_824A ; #8243
     JSR L6_8322 ; #8245
     BCC L6_824D ; #8248
@@ -400,14 +424,14 @@ L6_824D:
     AND #$01 ; #8252
     BEQ L6_825B ; #8254
     LDA #$72 ; #8256
-    JMP $F000 ; #8258
+    JMP L7_F000 ; #8258
 L6_825B:
     LDA #$74 ; #825B
-    JMP $F066 ; #825D
+    JMP L7_F066 ; #825D
 L6_8260:
     LDY #$02 ; #8260
     LDA #$7A ; #8262
-    JSR $F217 ; #8264
+    JSR L7_F217 ; #8264
     LDA <$10 ; #8267
     CMP #$03 ; #8269
     BCS L6_8272 ; #826B
@@ -430,10 +454,10 @@ L6_827D:
     TAY ; #828D
     LDA $04F0, X ; #828E
     CLC ; #8291
-    ADC $8398, Y ; #8292
+    ADC (L6_8398 + 0), Y ; #8292
     STA $04F0, X ; #8295
     LDA $0500, X ; #8298
-    ADC $8399, Y ; #829B
+    ADC (L6_8398 + 1), Y ; #829B
     STA $0500, X ; #829E
     LDA #$44 ; #82A1
     STA $0550, X ; #82A3
@@ -451,7 +475,7 @@ L6_827D:
 L6_82C2:
     LDY #$01 ; #82C2
     LDA #$76 ; #82C4
-    JSR $F0FB ; #82C6
+    JSR L7_F0FB ; #82C6
     BCS L6_82D0 ; #82C9
     JSR L6_8322 ; #82CB
     BCC L6_8321 ; #82CE
@@ -509,10 +533,10 @@ L6_8336:
     CLC ; #833B
     RTS ; #833C
 L6_833D:
-    JSR $F696 ; #833D
+    JSR L7_F696 ; #833D
     CMP #$10 ; #8340
     BCS L6_8336 ; #8342
-    JSR $F6DC ; #8344
+    JSR L7_F6DC ; #8344
     CMP #$11 ; #8347
     BCS L6_8336 ; #8349
     STA <$00 ; #834B
@@ -550,19 +574,23 @@ L6_837F:
     CLC ; #8384
     RTS ; #8385
 L6_8386:
-    JSR $F696 ; #8386
+    JSR L7_F696 ; #8386
     CMP #$10 ; #8389
     BCS L6_837F ; #838B
-    JSR $F6DC ; #838D
+    JSR L7_F6DC ; #838D
     BCC L6_837F ; #8390
     CMP #$11 ; #8392
     BCS L6_837F ; #8394
     SEC ; #8396
     RTS ; #8397
+
+L6_8398:
     .db $F0 ; #8398
     .db $FF ; #8399
     .db $10 ; #839A
     .db $00 ; #839B
+
+L6_839C:
     LDA $04D0, X ; #839C
     AND #$0F ; #839F
     BNE L6_83B6 ; #83A1
@@ -579,7 +607,7 @@ L6_83B6:
     BEQ L6_83D6 ; #83BB
     LDY #$01 ; #83BD
     LDA #$76 ; #83BF
-    JSR $F0FB ; #83C1
+    JSR L7_F0FB ; #83C1
     BCC L6_83D5 ; #83C4
     LDA #$00 ; #83C6
     STA $0480, X ; #83C8
@@ -598,7 +626,7 @@ L6_83D6:
     AND #$01 ; #83E1
     BEQ L6_8409 ; #83E3
     LDA #$72 ; #83E5
-    JSR $F000 ; #83E7
+    JSR L7_F000 ; #83E7
     JSR L6_848A ; #83EA
     LDA $04F0, X ; #83ED
     SEC ; #83F0
@@ -615,7 +643,7 @@ L6_83D6:
     JMP L6_8456 ; #8406
 L6_8409:
     LDA #$74 ; #8409
-    JSR $F066 ; #840B
+    JSR L7_F066 ; #840B
     JSR L6_848A ; #840E
     LDA $04F0, X ; #8411
     SEC ; #8414
@@ -638,7 +666,7 @@ L6_842D:
 L6_8434:
     LDY #$01 ; #8434
     LDA #$78 ; #8436
-    JSR $F0E7 ; #8438
+    JSR L7_F0E7 ; #8438
     LDA $0510, X ; #843B
     CMP #$08 ; #843E
     BCS L6_8450 ; #8440
@@ -648,7 +676,7 @@ L6_8434:
 L6_8449:
     LDY #$01 ; #8449
     LDA #$76 ; #844B
-    JSR $F0D3 ; #844D
+    JSR L7_F0D3 ; #844D
 L6_8450:
     LDA <$10 ; #8450
     CMP #$02 ; #8452
@@ -695,7 +723,7 @@ L6_84AA:
     AND #$0F ; #84AC
     BNE L6_84B5 ; #84AE
     LDA #$25 ; #84B0
-    JSR $F379 ; #84B2
+    JSR EnqueueSfx ; #84B2
 L6_84B5:
     LDA <$95 ; #84B5
     AND #$01 ; #84B7
@@ -740,10 +768,12 @@ L6_84FE:
     STA $04A0, X ; #8500
 L6_8503:
     RTS ; #8503
+
+L6_8504:
     LDA $04D0, X ; #8504
     AND #$0F ; #8507
     BNE L6_8527 ; #8509
-    JSR $F92B ; #850B
+    JSR L7_F92B ; #850B
     BCS L6_856D ; #850E
     LDA $04F0, Y ; #8510
     SEC ; #8513
@@ -775,7 +805,7 @@ L6_853C:
     ORA #$40 ; #854C
     STA $04D0, X ; #854E
     LDA #$00 ; #8551
-    JSR $FA34 ; #8553
+    JSR L7_FA34 ; #8553
     LDA #$FF ; #8556
     STA <$1D ; #8558
     LDY <$04 ; #855A
@@ -827,6 +857,8 @@ L6_85B0:
     DEC $04D0, X ; #85BD
 L6_85C0:
     RTS ; #85C0
+
+L6_85C1:
     LDA #$00 ; #85C1
     STA $0430, X ; #85C3
     LDA $0580, X ; #85C6
@@ -834,7 +866,7 @@ L6_85C0:
     BEQ L6_85E1 ; #85CB
     LDY #$01 ; #85CD
     LDA #$76 ; #85CF
-    JSR $F0FB ; #85D1
+    JSR L7_F0FB ; #85D1
     BCC L6_85E0 ; #85D4
     LDA #$10 ; #85D6
     STA $04E0, X ; #85D8
@@ -855,6 +887,8 @@ L6_85EB:
     LDA $0520, Y ; #85F1
     STA $0520, X ; #85F4
     RTS ; #85F7
+
+L6_85F8:
     JSR L6_8632 ; #85F8
     LDA $0480, X ; #85FB
     ORA $0490, X ; #85FE
@@ -888,6 +922,8 @@ L6_8632:
     SBC #$00 ; #863E
     STA $0490, X ; #8640
     RTS ; #8643
+
+L6_8644:
     LDA $0410, X ; #8644
     CMP #$03 ; #8647
     BNE L6_8657 ; #8649
@@ -898,6 +934,8 @@ L6_8632:
     STA $04D0, X ; #8654
 L6_8657:
     RTS ; #8657
+
+L6_8658:
     LDA $04D0, X ; #8658
     AND #$0F ; #865B
     BNE L6_8671 ; #865D
@@ -910,11 +948,11 @@ L6_8657:
 L6_8671:
     LDA $0560, X ; #8671
     BMI L6_8679 ; #8674
-    JMP $F27F ; #8676
+    JMP L7_F27F ; #8676
 L6_8679:
     LDY #$01 ; #8679
     LDA #$76 ; #867B
-    JSR $F0FB ; #867D
+    JSR L7_F0FB ; #867D
     BCC L6_868F ; #8680
     LDA #$80 ; #8682
     STA $04D0, X ; #8684
@@ -939,6 +977,7 @@ L6_868F:
     .db $04 ; #869C
     .db $04 ; #869D
 
+L6_869E:
     LDA $04F0, X ; #869E
     SEC ; #86A1
     SBC <ScrollX ; #86A2
@@ -968,7 +1007,7 @@ L6_86D3:
     LDA $0490, X ; #86D3
     CMP #$03 ; #86D6
     BEQ L6_86FE ; #86D8
-    JSR $F92B ; #86DA
+    JSR L7_F92B ; #86DA
     BCS L6_86F8 ; #86DD
     LDA $04A0, X ; #86DF
     BNE L6_86FD ; #86E2
@@ -978,7 +1017,7 @@ L6_86D3:
     STA $0420, X ; #86EC
     STA $0430, X ; #86EF
     LDA #$26 ; #86F2
-    JSR $F379 ; #86F4
+    JSR EnqueueSfx ; #86F4
     RTS ; #86F7
 L6_86F8:
     LDA #$00 ; #86F8
@@ -996,7 +1035,7 @@ L6_870C:
     CPY #$09 ; #870C
     BEQ L6_877A ; #870E
 L6_8710:
-    LDA <$1D ; #8710
+    LDA <VRamBuffer2Dirty ; #8710
     BNE L6_877A ; #8712
     LDA $04B0, X ; #8714
     ASL A ; #8717
@@ -1006,12 +1045,12 @@ L6_8710:
     LDA $0510, X ; #871D
     PHA ; #8720
     CLC ; #8721
-    ADC $87E7, Y ; #8722
+    ADC (L6_87E7 + 0), Y ; #8722
     STA $0510, X ; #8725
     LDA $04F0, X ; #8728
     PHA ; #872B
     CLC ; #872C
-    ADC $87E8, Y ; #872D
+    ADC (L6_87E7 + 1), Y ; #872D
     STA $04F0, X ; #8730
     LDA $0480, X ; #8733
     BNE L6_8741 ; #8736
@@ -1025,14 +1064,14 @@ L6_8741:
     BCC L6_8756 ; #8746
 L6_8748:
     LDA #$01 ; #8748
-    JSR $FA34 ; #874A
+    JSR L7_FA34 ; #874A
     LDA $04B0, X ; #874D
     AND #$01 ; #8750
     BEQ L6_8768 ; #8752
     BNE L6_8762 ; #8754
 L6_8756:
     LDA #$02 ; #8756
-    JSR $FA34 ; #8758
+    JSR L7_FA34 ; #8758
     LDA $04B0, X ; #875B
     AND #$01 ; #875E
     BNE L6_8768 ; #8760
@@ -1104,6 +1143,8 @@ L6_87B2:
     AND #$0F ; #87E1
     STA $0601, Y ; #87E3
     RTS ; #87E6
+
+L6_87E7:
     .db $3C ; #87E7
     .db $00 ; #87E8
     .db $4C ; #87E9
@@ -1144,19 +1185,19 @@ L6_87B2:
     .db $20 ; #880C
     .db $EC ; #880D
     .db $20 ; #880E
-    .db $BD ; #880F
-    .db $20 ; #8810
-    .db $04 ; #8811
+
+L6_880F:
+    LDA $0420, X ; #880F
     CMP #$83 ; #8812
     BNE L6_883C ; #8814
-    JSR $F92B ; #8816
+    JSR L7_F92B ; #8816
     BCC L6_881E ; #8819
     JMP L6_88A9 ; #881B
 L6_881E:
     TYA ; #881E
     STA $0490, X ; #881F
     LDA #$18 ; #8822
-    JSR $F379 ; #8824
+    JSR EnqueueSfx ; #8824
     LDA $0400, X ; #8827
     AND #$F7 ; #882A
     STA $0400, X ; #882C
@@ -1195,18 +1236,18 @@ L6_8873:
     BEQ L6_8885 ; #8878
     LDY #$01 ; #887A
     LDA #$76 ; #887C
-    JSR $F0FB ; #887E
+    JSR L7_F0FB ; #887E
     BCC L6_88A9 ; #8881
     BCS L6_8892 ; #8883
 L6_8885:
-    JSR $F2EA ; #8885
+    JSR L7_F2EA ; #8885
     LDA #$A0 ; #8888
     CMP $0510, X ; #888A
     BCS L6_88A9 ; #888D
     STA $0510, X ; #888F
 L6_8892:
     LDY $04E0, X ; #8892
-    LDA $8B5F, Y ; #8895
+    LDA $8B5F, Y ; #8895                ; AAAAAAAAAAAAAAAAAAAAa
     STA $04E0, X ; #8898
     LDA $8B69, Y ; #889B
     STA $0570, X ; #889E
@@ -1215,6 +1256,8 @@ L6_8892:
     STA $04D0, X ; #88A6
 L6_88A9:
     RTS ; #88A9
+
+L6_88AA:
     LDA $04D0, X ; #88AA
     AND #$0F ; #88AD
     BNE L6_8900 ; #88AF
@@ -1255,6 +1298,8 @@ L6_88C1:
     STA $0480, Y ; #88FD
 L6_8900:
     RTS ; #8900
+
+L6_8901:
     LDA $04D0, X ; #8901
     AND #$0F ; #8904
     BNE L6_8925 ; #8906
@@ -1266,7 +1311,7 @@ L6_8900:
 L6_8913:
     INC $04D0, X ; #8913
     LDA #$0D ; #8916
-    JSR $F379 ; #8918
+    JSR EnqueueSfx ; #8918
     LDA #$E0 ; #891B
     STA $04A0, X ; #891D
     LDA #$01 ; #8920
@@ -1285,7 +1330,7 @@ L6_893B:
     LDA #$00 ; #893B
     STA $04D0, X ; #893D
     LDA <$D9 ; #8940
-    JMP $F377 ; #8942
+    JMP L7_F377 ; #8942
 L6_8945:
     LDA #$30 ; #8945
     BNE L6_8974 ; #8947
@@ -1342,7 +1387,7 @@ L6_899F:
     LDA $0570, Y ; #89B4
     AND #$40 ; #89B7
     BEQ L6_89BE ; #89B9
-    JMP $F50F ; #89BB
+    JMP L7_F50F ; #89BB
 L6_89BE:
     DEY ; #89BE
     CPY #$05 ; #89BF
@@ -1368,7 +1413,7 @@ L6_89DB:
     SBC #$00 ; #89E2
     STA $0520, Y ; #89E4
     STY <$10 ; #89E7
-    JSR $F50F ; #89E9
+    JSR L7_F50F ; #89E9
     STA <$00 ; #89EC
     LDY <$10 ; #89EE
     PLA ; #89F0
@@ -1377,6 +1422,8 @@ L6_89DB:
     STA $0510, Y ; #89F5
     LDA <$00 ; #89F8
     RTS ; #89FA
+
+L6_89FB:
     LDA $04F0, X ; #89FB
     SEC ; #89FE
     SBC <ScrollX ; #89FF
@@ -1391,7 +1438,7 @@ L6_89DB:
     STA $0540, X ; #8A14
 L6_8A17:
     INC $0570, X ; #8A17
-    LDA <$50 ; #8A1A
+    LDA <TwoPlayersMode ; #8A1A
     BNE L6_8A2F ; #8A1C
     LDY #$00 ; #8A1E
     LDA $0054, Y ; #8A20
@@ -1423,8 +1470,8 @@ L6_8A4C:
     BCS L6_8AC1 ; #8A4F
     DEY ; #8A51
     BPL L6_8A4C ; #8A52
-    LDA <$16 ; #8A54
-    ORA <$17 ; #8A56
+    LDA <Joypad1Pressed ; #8A54
+    ORA <Joypad2Pressed ; #8A56
     JMP L6_8A6E ; #8A58
 L6_8A5B:
     TYA ; #8A5B
@@ -1447,7 +1494,7 @@ L6_8A6E:
     LDA <$12 ; #8A7A
     CMP #$E8 ; #8A7C
     BCS L6_8AC1 ; #8A7E
-    JSR $F21E ; #8A80
+    JSR L7_F21E ; #8A80
     LDA $0500, X ; #8A83
     CMP #$04 ; #8A86
     BNE L6_8AC1 ; #8A88
@@ -1467,7 +1514,7 @@ L6_8A98:
     JSR L6_8B4F ; #8AA5
     JMP L6_8AC1 ; #8AA8
 L6_8AAB:
-    JSR $F23C ; #8AAB
+    JSR L7_F23C ; #8AAB
     LDA $0500, X ; #8AAE
     CMP #$02 ; #8AB1
     BNE L6_8AC1 ; #8AB3
@@ -1490,7 +1537,7 @@ L6_8AC5:
     LDA $0054, Y ; #8AD5
     CMP #$03 ; #8AD8
     BCS L6_8AED ; #8ADA
-    JSR $F949 ; #8ADC
+    JSR L7_F949 ; #8ADC
     BCS L6_8AED ; #8ADF
     LDA #$08 ; #8AE1
     STA $0054, Y ; #8AE3
@@ -1504,10 +1551,10 @@ L6_8AED:
 L6_8AEF:
     LDA $04F0, X ; #8AEF
     CLC ; #8AF2
-    ADC $8B6F, Y ; #8AF3
+    ADC L6_8B6F, Y ; #8AF3
     STA <$00 ; #8AF6
     LDA $0500, X ; #8AF8
-    ADC $8B71, Y ; #8AFB
+    ADC L6_8B71, Y ; #8AFB
     STA <$01 ; #8AFE
     LDA $0490, Y ; #8B00
     BEQ L6_8B11 ; #8B03
@@ -1567,12 +1614,16 @@ L6_8B4F:
     STA $0500, X ; #8B6B
     RTS ; #8B6E
 
+L6_8B6F:
     .db $0C ; #8B6F
     .db $FC ; #8B70
+
+L6_8B71:
     .db $00 ; #8B71
     .db $FF ; #8B72
 
-    JSR $F21E ; #8B73
+L6_8B73:
+    JSR L7_F21E ; #8B73
     LDA $04F0, X ; #8B76
     CMP #$D0 ; #8B79
     BCS L6_8B8B ; #8B7B
@@ -1590,7 +1641,7 @@ L6_8B8B:
     BEQ L6_8B93 ; #8B8F
     LDA #$04 ; #8B91
 L6_8B93:
-    JSR $FA34 ; #8B93
+    JSR L7_FA34 ; #8B93
     LDA <$04 ; #8B96
     ASL A ; #8B98
     TAY ; #8B99
@@ -1633,12 +1684,13 @@ L6_8B93:
     .db $00 ; #8BC6
     .db $00 ; #8BC7
 
+L6_8BC8:
     LDA $04D0, X ; #8BC8
     AND #$0F ; #8BCB
     BNE L6_8BDD ; #8BCD
     LDA #$8C ; #8BCF
     LDY #$00 ; #8BD1
-    JSR $F217 ; #8BD3
+    JSR L7_F217 ; #8BD3
     LDA <$10 ; #8BD6
     CMP #$0F ; #8BD8
     BNE L6_8BDD ; #8BDA
@@ -1704,7 +1756,9 @@ L6_8C48:
     LDA $0590, X ; #8C48
     STA $00E8, Y ; #8C4B
     RTS ; #8C4E
-    JSR $F92B ; #8C4F
+
+L6_8C4F:
+    JSR L7_F92B ; #8C4F
     BCC L6_8C55 ; #8C52
     RTS ; #8C54
 L6_8C55:
@@ -1715,7 +1769,7 @@ L6_8C55:
     CPY #$64 ; #8C5F
     BEQ L6_8C76 ; #8C61
     LDA $8D2F, Y ; #8C63
-    JSR $F379 ; #8C66
+    JSR EnqueueSfx ; #8C66
     LDA $8D25, Y ; #8C69
     STA <$00 ; #8C6C
     LDA $8D2A, Y ; #8C6E
@@ -1723,22 +1777,26 @@ L6_8C55:
     JMP [$0000] ; #8C73
 L6_8C76:
     LDA #$17 ; #8C76
-    JSR $F379 ; #8C78
+    JSR EnqueueSfx ; #8C78
     LDY <$10 ; #8C7B
-    LDA $8D61, Y ; #8C7D
+    LDA L6_8D61, Y ; #8C7D
     TAY ; #8C80
     LDA #$10 ; #8C81
     STA $0200, Y ; #8C83
     RTS ; #8C86
+
+L6_8C87:
     STX <$11 ; #8C87
     LDX <$10 ; #8C89
-    JSR $F3F5 ; #8C8B
+    JSR L7_F3F5 ; #8C8B
     LDX <$11 ; #8C8E
     RTS ; #8C90
+
+L6_8C91:
     LDA #$00 ; #8C91
     STA <$01 ; #8C93
     LDY <$10 ; #8C95
-    LDA $8D63, Y ; #8C97
+    LDA L6_8D63, Y ; #8C97
     TAY ; #8C9A
     LDA #$01 ; #8C9B
     STA <$00 ; #8C9D
@@ -1766,7 +1824,7 @@ L6_8CC2:
     LDA <$50 ; #8CC6
     BNE L6_8CD8 ; #8CC8
     LDY <$10 ; #8CCA
-    LDA $8D63, Y ; #8CCC
+    LDA L6_8D63, Y ; #8CCC
     TAY ; #8CCF
     LDA $059E, Y ; #8CD0
     AND #$01 ; #8CD3
@@ -1838,34 +1896,52 @@ L6_8D4A:
     LDA <$00 ; #8D4D
     BPL L6_8D4A ; #8D4F
     RTS ; #8D51
-    .db $87 ; #8D52
-    STA [$D8], Y ; #8D53
-    ROL A ; #8D55
-    LSR A ; #8D56
-    STY $8C8C ; #8D57
-    STA $178D ; #8D5A
+
+    .db LOW(L6_8C87) ; #8D52
+    .db LOW(L6_8C91) ; #8D53
+    .db LOW(L6_8CD8) ; #8D54
+    .db LOW(L6_8D2A) ; #8D55
+    .db LOW(L6_8D4A) ; #8D56
+
+    .db HIGH(L6_8C87) ; #8D57
+    .db HIGH(L6_8C91) ; #8D58
+    .db HIGH(L6_8CD8) ; #8D59
+    .db HIGH(L6_8D2A) ; #8D5A
+    .db HIGH(L6_8D4A) ; #8D5B
+
+    .db $17 ; #8D5C
     .db $17 ; #8D5D
-    BIT <$17 ; #8D5E
+    .db $24 ; #8D5E
+    .db $17 ; #8D5F
     .db $17 ; #8D60
+
+L6_8D61:
     .db $04 ; #8D61
-    CLC ; #8D62
+    .db $18 ; #8D62
+
+L6_8D63:
     .db $12 ; #8D63
     .db $42 ; #8D64
-    ASL <$46, X ; #8D65
-    PHP ; #8D67
+    .db $16 ; #8D65
+    .db $46 ; #8D66
+    .db $08 ; #8D67
     .db $1C ; #8D68
+
+L6_8D69:
     DEC $0480, X ; #8D69
     BNE L6_8D74 ; #8D6C
     LDA #$00 ; #8D6E
     STA $04D0, X ; #8D70
     RTS ; #8D73
 L6_8D74:
-    JMP $F27F ; #8D74
-    JSR $F92B ; #8D77
+    JMP L7_F27F ; #8D74
+
+L6_8D77:
+    JSR L7_F92B ; #8D77
     BCS L6_8D86 ; #8D7A
     STY <$10 ; #8D7C
     LDA #$24 ; #8D7E
-    JSR $F379 ; #8D80
+    JSR EnqueueSfx ; #8D80
     JMP L6_8CD8 ; #8D83
 L6_8D86:
     LDA $0480, X ; #8D86
@@ -1873,7 +1949,7 @@ L6_8D86:
     LDA $0490, X ; #8D8B
     AND #$0F ; #8D8E
     TAY ; #8D90
-    LDA $8DA5, Y ; #8D91
+    LDA L6_8DA5, Y ; #8D91
     JSR L6_B50C ; #8D94
     LDA #$04 ; #8D97
     STA $0480, X ; #8D99
@@ -1881,6 +1957,8 @@ L6_8D86:
 L6_8D9F:
     DEC $0480, X ; #8D9F
     JMP L6_B4C1 ; #8DA2
+
+L6_8DA5:
     .db $20 ; #8DA5
     .db $21 ; #8DA6
     .db $22 ; #8DA7
@@ -1897,9 +1975,9 @@ L6_8D9F:
     .db $23 ; #8DB2
     .db $22 ; #8DB3
     .db $21 ; #8DB4
-    .db $BD ; #8DB5
-    .db $80 ; #8DB6
-    .db $04 ; #8DB7
+
+L6_8DB5:
+    LDA $0480, X ; #8DB5
     BNE L6_8DFB ; #8DB8
     LDY $0490, X ; #8DBA
     LDA $0056, Y ; #8DBD
@@ -1941,9 +2019,9 @@ L6_8DFB:
     ORA <$00 ; #8E0A
     STA $0400, X ; #8E0C
     DEC $0480, X ; #8E0F
-    JMP $F25A ; #8E12
+    JMP L7_F25A ; #8E12
 L6_8E15:
-    JSR $F977 ; #8E15
+    JSR L7_F977 ; #8E15
     BCS L6_8E80 ; #8E18
 L6_8E1A:
     LDA #$00 ; #8E1A
@@ -1957,7 +2035,7 @@ L6_8E2A:
     STA $0480, X ; #8E2A
 L6_8E2D:
     LDA #$16 ; #8E2D
-    JSR $F379 ; #8E2F
+    JSR EnqueueSfx ; #8E2F
     LDA #$80 ; #8E32
     STA $04D0, X ; #8E34
     LDA $0580, Y ; #8E37
@@ -1990,7 +2068,9 @@ L6_8E2D:
     STA $04E0, Y ; #8E7D
 L6_8E80:
     RTS ; #8E80
-    JSR $F27F ; #8E81
+
+L6_8E81:
+    JSR L7_F27F ; #8E81
     LDA $0480, X ; #8E84
     CMP #$04 ; #8E87
     BEQ L6_8E8F ; #8E89
@@ -2015,9 +2095,9 @@ L6_8EAD:
     LDA $0580, X ; #8EAD
     AND #$01 ; #8EB0
     BEQ L6_8EB7 ; #8EB2
-    JMP $F21E ; #8EB4
+    JMP L7_F21E ; #8EB4
 L6_8EB7:
-    JMP $F23C ; #8EB7
+    JMP L7_F23C ; #8EB7
 L6_8EBA:
     LDY #$0F ; #8EBA
 L6_8EBC:
@@ -2075,6 +2155,8 @@ L6_8F1A:
     ADC <$01 ; #8F32
     STA $0500, Y ; #8F34
     RTS ; #8F37
+
+L6_8F38:
     LDA $04D0, X ; #8F38
     AND #$0F ; #8F3B
     BNE L6_8F55 ; #8F3D
@@ -2082,7 +2164,7 @@ L6_8F1A:
     STA $0530, X ; #8F41
     LDA #$01 ; #8F44
     STA $0540, X ; #8F46
-    JSR $F328 ; #8F49
+    JSR L7_F328 ; #8F49
     LDA #$1E ; #8F4C
     STA $0490, X ; #8F4E
     INC $04D0, X ; #8F51
@@ -2105,22 +2187,22 @@ L6_8F71:
     AND #$0F ; #8F73
     BNE L6_8F7C ; #8F75
     LDA #$1A ; #8F77
-    JSR $F379 ; #8F79
+    JSR EnqueueSfx ; #8F79
 L6_8F7C:
     LDY #$02 ; #8F7C
     LDA #$10 ; #8F7E
-    JSR $F0FB ; #8F80
+    JSR L7_F0FB ; #8F80
     PHP ; #8F83
     LDY #$02 ; #8F84
     LDA $0580, X ; #8F86
     AND #$01 ; #8F89
     BEQ L6_8F95 ; #8F8B
     LDA #$0A ; #8F8D
-    JSR $F000 ; #8F8F
+    JSR L7_F000 ; #8F8F
     JMP L6_8F9A ; #8F92
 L6_8F95:
     LDA #$0D ; #8F95
-    JSR $F066 ; #8F97
+    JSR L7_F066 ; #8F97
 L6_8F9A:
     PLP ; #8F9A
     BCC L6_8FC5 ; #8F9B
@@ -2145,6 +2227,8 @@ L6_8FC0:
     STA $0480, X ; #8FC2
 L6_8FC5:
     RTS ; #8FC5
+
+L6_8FC6:
     LDA $04D0, X ; #8FC6
     AND #$0F ; #8FC9
     BNE L6_8FE0 ; #8FCB
@@ -2153,12 +2237,12 @@ L6_8FC5:
     STA $0540, X ; #8FD2
     LDA #$2B ; #8FD5
     STA $0480, X ; #8FD7
-    JSR $F328 ; #8FDA
+    JSR L7_F328 ; #8FDA
     INC $04D0, X ; #8FDD
 L6_8FE0:
     LDY #$02 ; #8FE0
     LDA #$1C ; #8FE2
-    JSR $F0FB ; #8FE4
+    JSR L7_F0FB ; #8FE4
     PHP ; #8FE7
     BCC L6_902F ; #8FE8
     LDA #$1F ; #8FEA
@@ -2173,10 +2257,10 @@ L6_8FFE:
     LDA $04D0, X ; #8FFE
     AND #$02 ; #9001
     BNE L6_902F ; #9003
-    JSR $F4A1 ; #9005
+    JSR L7_F4A1 ; #9005
     CMP #$18 ; #9008
     BCS L6_9019 ; #900A
-    JSR $F328 ; #900C
+    JSR L7_F328 ; #900C
     LDA #$80 ; #900F
     STA $0530, X ; #9011
     INC $04D0, X ; #9014
@@ -2199,11 +2283,11 @@ L6_902F:
     AND #$01 ; #9034
     BEQ L6_9040 ; #9036
     LDA #$16 ; #9038
-    JSR $F000 ; #903A
+    JSR L7_F000 ; #903A
     JMP L6_9045 ; #903D
 L6_9040:
     LDA #$19 ; #9040
-    JSR $F066 ; #9042
+    JSR L7_F066 ; #9042
 L6_9045:
     PLP ; #9045
     BCC L6_9077 ; #9046
@@ -2245,6 +2329,8 @@ L6_9090:
     STA $0490, X ; #9092
 L6_9095:
     RTS ; #9095
+
+L6_9096:
     LDA $04D0, X ; #9096
     AND #$0F ; #9099
     BNE L6_90AD ; #909B
@@ -2253,7 +2339,7 @@ L6_9095:
     STA $0530, X ; #90A2
     LDA #$01 ; #90A5
     STA $0540, X ; #90A7
-    JSR $F328 ; #90AA
+    JSR L7_F328 ; #90AA
 L6_90AD:
     LDA $0400, X ; #90AD
     BMI L6_90B5 ; #90B0
@@ -2262,13 +2348,13 @@ L6_90B5:
     LDA $0580, X ; #90B5
     AND #$01 ; #90B8
     BEQ L6_90C9 ; #90BA
-    JSR $F21E ; #90BC
+    JSR L7_F21E ; #90BC
     LDA $0400, X ; #90BF
     ORA #$40 ; #90C2
     STA $0400, X ; #90C4
     BNE L6_90D4 ; #90C7
 L6_90C9:
-    JSR $F23C ; #90C9
+    JSR L7_F23C ; #90C9
     LDA $0400, X ; #90CC
     AND #$BF ; #90CF
     STA $0400, X ; #90D1
@@ -2276,10 +2362,10 @@ L6_90D4:
     LDA $04D0, X ; #90D4
     AND #$02 ; #90D7
     BNE L6_9117 ; #90D9
-    JSR $F4DE ; #90DB
+    JSR L7_F4DE ; #90DB
     CMP #$40 ; #90DE
     BCS L6_9138 ; #90E0
-    JSR $F50C ; #90E2
+    JSR L7_F50C ; #90E2
     SEC ; #90E5
     SBC #$04 ; #90E6
     CMP #$09 ; #90E8
@@ -2318,7 +2404,7 @@ L6_912D:
     AND #$0F ; #912F
     BNE L6_9138 ; #9131
     LDA #$1B ; #9133
-    JSR $F379 ; #9135
+    JSR EnqueueSfx ; #9135
 L6_9138:
     RTS ; #9138
 
@@ -2362,6 +2448,7 @@ L6_914B:
     .db $00 ; #915B
     .db $03 ; #915C
 
+L6_915D:
     LDA $04D0, X ; #915D
     AND #$0F ; #9160
     BNE L6_9177 ; #9162
@@ -2443,6 +2530,8 @@ L6_91EA:
     LDA #$08 ; #91FF
     STA $0490, X ; #9201
     RTS ; #9204
+
+L6_9205:
     LDA $04D0, X ; #9205
     AND #$0F ; #9208
     BNE L6_9227 ; #920A
@@ -2463,15 +2552,15 @@ L6_9227:
     LDA $04E0, X ; #922E
     CMP #$06 ; #9231
     BNE L6_9245 ; #9233
-    JSR $F25A ; #9235
-    JSR $F21E ; #9238
+    JSR L7_F25A ; #9235
+    JSR L7_F21E ; #9238
     LDA $0400, X ; #923B
     ORA #$40 ; #923E
     STA $0400, X ; #9240
     BNE L6_9253 ; #9243
 L6_9245:
-    JSR $F25A ; #9245
-    JSR $F23C ; #9248
+    JSR L7_F25A ; #9245
+    JSR L7_F23C ; #9248
     LDA $0400, X ; #924B
     AND #$BF ; #924E
     STA $0400, X ; #9250
@@ -2488,6 +2577,8 @@ L6_925C:
     STA $0490, X ; #9263
     DEC $04D0, X ; #9266
     RTS ; #9269
+
+L6_926A:
     LDA $04D0, X ; #926A
     AND #$0F ; #926D
     BNE L6_928B ; #926F
@@ -2495,7 +2586,7 @@ L6_925C:
     STA $0530, X ; #9273
     LDA #$01 ; #9276
     STA $0540, X ; #9278
-    JSR $F328 ; #927B
+    JSR L7_F328 ; #927B
     LDA #$02 ; #927E
     STA $04A0, X ; #9280
     LDA #$10 ; #9283
@@ -2510,28 +2601,28 @@ L6_928B:
     BEQ L6_9302 ; #9296
     LDA $0480, X ; #9298
     BNE L6_92AD ; #929B
-    JSR $F4DE ; #929D
+    JSR L7_F4DE ; #929D
     CMP #$3C ; #92A0
     BCS L6_92AD ; #92A2
     JSR L6_9322 ; #92A4
     LDA #$1E ; #92A7
-    JSR $F379 ; #92A9
+    JSR EnqueueSfx ; #92A9
     RTS ; #92AC
 L6_92AD:
     LDY #$02 ; #92AD
     LDA #$1C ; #92AF
-    JSR $F0FB ; #92B1
+    JSR L7_F0FB ; #92B1
     PHP ; #92B4
     LDY #$02 ; #92B5
     LDA $0580, X ; #92B7
     AND #$01 ; #92BA
     BEQ L6_92C6 ; #92BC
     LDA #$16 ; #92BE
-    JSR $F000 ; #92C0
+    JSR L7_F000 ; #92C0
     JMP L6_92CB ; #92C3
 L6_92C6:
     LDA #$19 ; #92C6
-    JSR $F066 ; #92C8
+    JSR L7_F066 ; #92C8
 L6_92CB:
     PLP ; #92CB
     BCC L6_92DE ; #92CC
@@ -2564,7 +2655,7 @@ L6_9302:
     LDA $0580, X ; #9302
     AND #$01 ; #9305
     BEQ L6_9316 ; #9307
-    JSR $F21E ; #9309
+    JSR L7_F21E ; #9309
     LDA $0400, X ; #930C
     ORA #$40 ; #930F
     STA $0400, X ; #9311
@@ -2573,7 +2664,7 @@ L6_9316:
     LDA $0400, X ; #9316
     AND #$BF ; #9319
     STA $0400, X ; #931B
-    JSR $F23C ; #931E
+    JSR L7_F23C ; #931E
 L6_9321:
     RTS ; #9321
 L6_9322:
@@ -2740,22 +2831,19 @@ L6_9445:
     .db $01 ; #9448
     .db $00 ; #9449
     .db $01 ; #944A
-    .db $BD ; #944B
-    .db $80 ; #944C
-    .db $05 ; #944D
-    .db $29 ; #944E
-    .db $01 ; #944F
-    .db $F0 ; #9450
-    .db $06 ; #9451
-    .db $20 ; #9452
-    .db $1E ; #9453
-    .db $F2 ; #9454
-    .db $4C ; #9455
-    .db $EA ; #9456
-    .db $F2 ; #9457
 
-    JSR $F23C ; #9458
-    JMP $F2EA ; #945B
+L6_944B:
+    LDA $0580, X ; #944B
+    AND #$01 ; #944E
+    BEQ L6_9458 ; #9450
+    JSR $F21E ; #9452
+    JMP $F2EA ; #9455
+
+L6_9458:
+    JSR L7_F23C ; #9458
+    JMP L7_F2EA ; #945B
+
+L6_945E:
     LDA $04D0, X ; #945E
     AND #$0F ; #9461
     BNE L6_947F ; #9463
@@ -2763,7 +2851,7 @@ L6_9445:
     STA $0530, X ; #9467
     LDA #$01 ; #946A
     STA $0540, X ; #946C
-    JSR $F328 ; #946F
+    JSR L7_F328 ; #946F
     LDA #$1D ; #9472
     STA $0480, X ; #9474
     LDA #$20 ; #9477
@@ -2773,7 +2861,7 @@ L6_947F:
     LDA $0580, X ; #947F
     AND #$01 ; #9482
     BEQ L6_9493 ; #9484
-    JSR $F21E ; #9486
+    JSR L7_F21E ; #9486
     LDA $0400, X ; #9489
     ORA #$40 ; #948C
     STA $0400, X ; #948E
@@ -2798,7 +2886,7 @@ L6_94B0:
     BEQ L6_94DB ; #94B7
     CMP #$03 ; #94B9
     BEQ L6_94DC ; #94BB
-    JSR $F4A1 ; #94BD
+    JSR L7_F4A1 ; #94BD
     CMP #$20 ; #94C0
     BCS L6_94DB ; #94C2
     TYA ; #94C4
@@ -2825,6 +2913,8 @@ L6_94DC:
     STA $0410, X ; #94F4
     DEC $04D0, X ; #94F7
     RTS ; #94FA
+
+L6_94FB:
     LDA $04D0, X ; #94FB
     AND #$0F ; #94FE
     BNE L6_951F ; #9500
@@ -2835,7 +2925,7 @@ L6_94DC:
     STA $0550, X ; #950C
     LDA #$01 ; #950F
     STA $0560, X ; #9511
-    JSR $F328 ; #9514
+    JSR L7_F328 ; #9514
     LDA #$33 ; #9517
     STA $0420, X ; #9519
     INC $04D0, X ; #951C
@@ -2850,7 +2940,7 @@ L6_952F:
     LDA $04D0, X ; #952F
     AND #$02 ; #9532
     BNE L6_9551 ; #9534
-    JSR $F4A1 ; #9536
+    JSR L7_F4A1 ; #9536
     CMP #$08 ; #9539
     BCS L6_954E ; #953B
     INC $04D0, X ; #953D
@@ -2861,7 +2951,7 @@ L6_952F:
     STA $0410, X ; #954A
     RTS ; #954D
 L6_954E:
-    JMP $F25A ; #954E
+    JMP L7_F25A ; #954E
 L6_9551:
     LDA $0580, X ; #9551
     AND #$01 ; #9554
@@ -2955,10 +3045,11 @@ L6_95D5:
     .db $03 ; #95E0
     .db $03 ; #95E1
 
+L6_95E2:
     LDA $04D0, X ; #95E2
     AND #$0F ; #95E5
     BNE L6_95FE ; #95E7
-    JSR $F328 ; #95E9
+    JSR L7_F328 ; #95E9
     INC $04D0, X ; #95EC
     LDA $0580, X ; #95EF
     AND #$01 ; #95F2
@@ -2969,7 +3060,7 @@ L6_95D5:
 L6_95FE:
     LDA $04B0, X ; #95FE
     BNE L6_960C ; #9601
-    JSR $F977 ; #9603
+    JSR L7_F977 ; #9603
     BCS L6_9616 ; #9606
     JSR L6_9671 ; #9608
     RTS ; #960B
@@ -2986,7 +3077,7 @@ L6_9616:
     BNE L6_965B ; #9620
     JSR L6_96C2 ; #9622
     LDA #$1F ; #9625
-    JSR $F379 ; #9627
+    JSR EnqueueSfx ; #9627
     LDA #$4A ; #962A
     STA $0420, X ; #962C
     LDA #$00 ; #962F
@@ -3082,10 +3173,10 @@ L6_96CF:
     TAY ; #96DC
     LDA $04F0, X ; #96DD
     CLC ; #96E0
-    ADC $9725, Y ; #96E1
+    ADC (L6_9725 + 0), Y ; #96E1
     PHA ; #96E4
     LDA $0500, X ; #96E5
-    ADC $9726, Y ; #96E8
+    ADC (L6_9725 + 1), Y ; #96E8
     LDY <$00 ; #96EB
     STA $0500, Y ; #96ED
     PLA ; #96F0
@@ -3111,11 +3202,13 @@ L6_96CF:
     STA $04E0, Y ; #9721
     RTS ; #9724
 
+L6_9725:
     .db $08 ; #9725
     .db $00 ; #9726
     .db $F8 ; #9727
     .db $FF ; #9728
 
+L6_9729:
     LDA $04D0, X ; #9729
     AND #$0F ; #972C
     BNE L6_973B ; #972E
@@ -3127,12 +3220,14 @@ L6_973B:
     LDA $0580, X ; #973B
     AND #$01 ; #973E
     BEQ L6_9745 ; #9740
-    JMP $F21E ; #9742
+    JMP L7_F21E ; #9742
 L6_9745:
     LDA $0400, X ; #9745
     AND #$BF ; #9748
     STA $0400, X ; #974A
-    JMP $F23C ; #974D
+    JMP L7_F23C ; #974D
+
+L6_9750:
     LDA $04D0, X ; #9750
     AND #$0F ; #9753
     BNE L6_9783 ; #9755
@@ -3145,7 +3240,7 @@ L6_9745:
     STA $0540, X ; #9766
     LDA #$2C ; #9769
     STA $0480, X ; #976B
-    JSR $F328 ; #976E
+    JSR L7_F328 ; #976E
     INC $04D0, X ; #9771
     LDA $0580, X ; #9774
     AND #$01 ; #9777
@@ -3166,23 +3261,23 @@ L6_9783:
     STA $0480, X ; #9797
     INC $04D0, X ; #979A
 L6_979D:
-    JMP $F25A ; #979D
+    JMP L7_F25A ; #979D
 L6_97A0:
     LDA $0580, X ; #97A0
     AND #$01 ; #97A3
     BEQ L6_97AD ; #97A5
-    JSR $F25A ; #97A7
+    JSR L7_F25A ; #97A7
     JMP L6_97B0 ; #97AA
 L6_97AD:
-    JSR $F27F ; #97AD
+    JSR L7_F27F ; #97AD
 L6_97B0:
     LDA <$95 ; #97B0
     AND #$0F ; #97B2
     BNE L6_97BB ; #97B4
     LDA #$1D ; #97B6
-    JSR $F379 ; #97B8
+    JSR EnqueueSfx ; #97B8
 L6_97BB:
-    JSR $F4DE ; #97BB
+    JSR L7_F4DE ; #97BB
     CMP #$2C ; #97BE
     BCS L6_97D6 ; #97C0
     LDA #$47 ; #97C2
@@ -3210,12 +3305,12 @@ L6_97E9:
     LDA $0400, X ; #97F0
     ORA #$40 ; #97F3
     STA $0400, X ; #97F5
-    JMP $F21E ; #97F8
+    JMP L7_F21E ; #97F8
 L6_97FB:
     LDA $0400, X ; #97FB
     AND #$BF ; #97FE
     STA $0400, X ; #9800
-    JMP $F23C ; #9803
+    JMP L7_F23C ; #9803
 L6_9806:
     LDY #$0F ; #9806
 L6_9808:
@@ -3262,6 +3357,8 @@ L6_982F:
     LDA #$25 ; #9860
     STA $04E0, Y ; #9862
     RTS ; #9865
+
+L6_9866:
     LDA $04D0, X ; #9866
     AND #$0F ; #9869
     BNE L6_987D ; #986B
@@ -3277,13 +3374,13 @@ L6_987D:
     BNE L6_989B ; #9882
     LDY #$02 ; #9884
     LDA #$2D ; #9886
-    JSR $F1F1 ; #9888
+    JSR L7_F1F1 ; #9888
     BCC L6_989A ; #988B
     LDA #$69 ; #988D
     STA $0420, X ; #988F
     INC $04D0, X ; #9892
     LDA #$20 ; #9895
-    JSR $F379 ; #9897
+    JSR EnqueueSfx ; #9897
 L6_989A:
     RTS ; #989A
 L6_989B:
@@ -3297,6 +3394,8 @@ L6_989B:
     STA $04D0, X ; #98AD
 L6_98B0:
     RTS ; #98B0
+
+L6_98B1:
     LDA $04D0, X ; #98B1
     AND #$0F ; #98B4
     BNE L6_98C0 ; #98B6
@@ -3304,7 +3403,7 @@ L6_98B0:
     STA $0480, X ; #98BA
     INC $04D0, X ; #98BD
 L6_98C0:
-    JSR $F977 ; #98C0
+    JSR L7_F977 ; #98C0
     BCS L6_98FD ; #98C3
     LDA $0580, Y ; #98C5
     EOR #$03 ; #98C8
@@ -3365,13 +3464,17 @@ L6_992E:
     STA <$E5 ; #9945
     AND #$01 ; #9947
     TAY ; #9949
-    LDA L6_9954, Y ; #994A                ; TODO hm...
+    LDA L6_9954, Y ; #994A
     STA $0480, X ; #994D
     DEC $04D0, X ; #9950
     RTS ; #9953
+
 L6_9954:
-    JSR L6_BD3C ; #9954
-    BNE L6_995D ; #9957
+    .db $20 ; #9954
+    .db $3C ; #9955
+
+L6_9956:
+    LDA $04D0, X ; #9956
     AND #$0F ; #9959
     BNE L6_9967 ; #995B
 L6_995D:
@@ -3532,6 +3635,7 @@ L6_9A26:
     .db $F4 ; #9A54
     .db $FF ; #9A55
 
+L6_9A56:
     LDA $04D0, X ; #9A56
     AND #$0F ; #9A59
     BNE L6_9A7A ; #9A5B
@@ -3641,6 +3745,7 @@ L6_9B36:
     .db $F0 ; #9B38
     .db $FF ; #9B39
 
+L6_9B3A:
     LDA $04D0, X ; #9B3A
     AND #$0F ; #9B3D
     BNE L6_9B4E ; #9B3F
@@ -3653,12 +3758,14 @@ L6_9B4E:
     LDA $0580, X ; #9B4E
     AND #$01 ; #9B51
     BEQ L6_9B58 ; #9B53
-    JMP $F21E ; #9B55
+    JMP L7_F21E ; #9B55
 L6_9B58:
     LDA $0400, X ; #9B58
     AND #$BF ; #9B5B
     STA $0400, X ; #9B5D
     JMP L7_F23C ; #9B60
+
+L6_9B63:
     LDA $04D0, X ; #9B63
     AND #$0F ; #9B66
     BNE L6_9B78 ; #9B68
@@ -3722,6 +3829,8 @@ L6_9BCC:
     STA $0410, X ; #9BE5
 L6_9BE8:
     RTS ; #9BE8
+
+L6_9BE9:
     LDA $04D0, X ; #9BE9
     AND #$0F ; #9BEC
     BNE L6_9C08 ; #9BEE
@@ -3746,6 +3855,8 @@ L6_9C08:
     LDA #$05 ; #9C16
     STA $0560, X ; #9C18
     RTS ; #9C1B
+
+L6_9C1C:
     LDA $04D0, X ; #9C1C
     AND #$0F ; #9C1F
     BNE L6_9C40 ; #9C21
@@ -3759,7 +3870,7 @@ L6_9C08:
     LDA #$10 ; #9C34
     STA $0480, X ; #9C36
     INC $04D0, X ; #9C39
-    JSR $F328 ; #9C3C
+    JSR L7_F328 ; #9C3C
 L6_9C3F:
     RTS ; #9C3F
 L6_9C40:
@@ -3780,6 +3891,8 @@ L6_9C50:
     STA $0480, X ; #9C5F
 L6_9C62:
     RTS ; #9C62
+
+L6_9C63:
     LDA $04D0, X ; #9C63
     AND #$0F ; #9C66
     BNE L6_9C91 ; #9C68
@@ -3872,7 +3985,9 @@ L6_9D1D:
     STA $04A0, X ; #9D1F
 L6_9D22:
     RTS ; #9D22
-    JSR $F328 ; #9D23
+
+L6_9D23:
+    JSR L7_F328 ; #9D23
     LDA $0580, X ; #9D26
     AND #$01 ; #9D29
     BEQ L6_9D36 ; #9D2B
@@ -3885,6 +4000,8 @@ L6_9D36:
     AND #$BF ; #9D39
     STA $0400, X ; #9D3B
     RTS ; #9D3E
+
+L6_9D3F:
     LDA $04D0, X ; #9D3F
     AND #$0F ; #9D42
     BNE L6_9D54 ; #9D44
@@ -3920,7 +4037,7 @@ L6_9D78:
     JMP L6_9D8E ; #9D86
 L6_9D89:
     LDA #$5D ; #9D89
-    JSR $F066 ; #9D8B
+    JSR L7_F066 ; #9D8B
 L6_9D8E:
     LDA <$10 ; #9D8E
     CMP #$03 ; #9D90
@@ -3962,6 +4079,8 @@ L6_9DCC:
     STA $0480, X ; #9DD8
     DEC $04D0, X ; #9DDB
     RTS ; #9DDE
+
+L6_9DDF:
     LDA $04D0, X ; #9DDF
     AND #$0F ; #9DE2
     BNE L6_9DF9 ; #9DE4
@@ -4093,6 +4212,7 @@ L6_9EE8:
     .db $EE ; #9EEA
     .db $FF ; #9EEB
 
+L6_9EEC:
     LDA $04D0, X ; #9EEC
     AND #$0F ; #9EEF
     BNE L6_9EFE ; #9EF1
@@ -4108,6 +4228,8 @@ L6_9EFE:
     JMP L7_F21E ; #9F05
 L6_9F08:
     JMP L7_F23C ; #9F08
+
+L6_9F0B:
     LDA $04D0, X ; #9F0B
     AND #$0F ; #9F0E
     BNE L6_9F28 ; #9F10
@@ -4147,7 +4269,7 @@ L6_9F44:
     JMP L6_9F62 ; #9F5A
 L6_9F5D:
     LDA #$51 ; #9F5D
-    JSR $F066 ; #9F5F
+    JSR L7_F066 ; #9F5F
 L6_9F62:
     PLP ; #9F62
     BCC L6_9F80 ; #9F63
@@ -4166,6 +4288,8 @@ L6_9F78:
     JSR L6_8EBA ; #9F7D
 L6_9F80:
     RTS ; #9F80
+
+L6_9F81:
     LDA $04D0, X ; #9F81
     AND #$0F ; #9F84
     BNE L6_9FA5 ; #9F86
@@ -4178,14 +4302,14 @@ L6_9F80:
     STA $0490, X ; #9F97
     LDA #$02 ; #9F9A
     STA $04A0, X ; #9F9C
-    JSR $F328 ; #9F9F
+    JSR L7_F328 ; #9F9F
     INC $04D0, X ; #9FA2
 L6_9FA5:
     LDA <$95 ; #9FA5
     AND #$0F ; #9FA7
     BNE L6_9FB0 ; #9FA9
     LDA #$28 ; #9FAB
-    JSR $F379 ; #9FAD
+    JSR EnqueueSfx ; #9FAD
 L6_9FB0:
     LDA $04D0, X ; #9FB0
     AND #$02 ; #9FB3
@@ -4193,10 +4317,10 @@ L6_9FB0:
     LDA $0580, X ; #9FB7
     AND #$01 ; #9FBA
     BEQ L6_9FC4 ; #9FBC
-    JSR $F21E ; #9FBE
+    JSR L7_F21E ; #9FBE
     JMP L6_9FC7 ; #9FC1
 L6_9FC4:
-    JSR $F23C ; #9FC4
+    JSR L7_F23C ; #9FC4
 L6_9FC7:
     DEC $0480, X ; #9FC7
     BNE L6_9FDA ; #9FCA
@@ -4322,6 +4446,7 @@ L6_A0AC:
     .db $2F ; #A0B0
     .db $00 ; #A0B1
 
+L6_A0B2:
     LDA $04D0, X ; #A0B2
     AND #$0F ; #A0B5
     BNE L6_A0C6 ; #A0B7
@@ -4345,6 +4470,8 @@ L6_A0DA:
     JMP L7_F2EA ; #A0DD
 L6_A0E0:
     RTS ; #A0E0
+
+L6_A0E1:
     LDA $04D0, X ; #A0E1
     AND #$0F ; #A0E4
     BNE L6_A14C ; #A0E6
@@ -4455,6 +4582,7 @@ L6_A1C3:
     .db $F4 ; #A1C5
     .db $FF ; #A1C6
 
+L6_A1C7:
     LDA $04D0, X ; #A1C7
     AND #$0F ; #A1CA
     BNE L6_A1E3 ; #A1CC
@@ -4485,7 +4613,7 @@ L6_A1FB:
     BEQ L6_A26D ; #A202
     CMP #$03 ; #A204
     BEQ L6_A223 ; #A206
-    JSR $F4DE ; #A208
+    JSR L7_F4DE ; #A208
     CMP #$48 ; #A20B
     BCS L6_A223 ; #A20D
     LDA #$56 ; #A20F
@@ -4603,6 +4731,7 @@ L6_A2ED:
     .db $F0 ; #A2EF
     .db $FF ; #A2F0
 
+L6_A2F1:
     LDA $04D0, X ; #A2F1
     AND #$0F ; #A2F4
     BNE L6_A305 ; #A2F6
@@ -4627,6 +4756,8 @@ L6_A319:
     JSR L7_F23C ; #A321
 L6_A324:
     RTS ; #A324
+
+L6_A325:
     LDA $04D0, X ; #A325
     AND #$0F ; #A328
     BNE L6_A34C ; #A32A
@@ -4668,6 +4799,7 @@ L6_A371:
     .db $14 ; #A372
     .db $0C ; #A373
 
+L6_A374:
     LDA $04D0, X ; #A374
     AND #$0F ; #A377
     BNE L6_A38D ; #A379
@@ -4705,6 +4837,8 @@ L6_A3AF:
     STA $0400, X ; #A3C1
 L6_A3C4:
     RTS ; #A3C4
+
+L6_A3C5:
     LDA $04D0, X ; #A3C5
     AND #$0F ; #A3C8
     BNE L6_A3E1 ; #A3CA
@@ -4854,6 +4988,8 @@ L6_A495:
     CPY #$0B ; #A496
     BCC L6_A487 ; #A498
     RTS ; #A49A
+
+L6_A49B:
     LDA $04D0, X ; #A49B
     AND #$0F ; #A49E
     BNE L6_A4C8 ; #A4A0
@@ -4894,6 +5030,8 @@ L6_A4D8:
     JSR L7_F31D ; #A4F7
 L6_A4FA:
     RTS ; #A4FA
+
+L6_A4FB:
     LDA $04D0, X ; #A4FB
     AND #$0F ; #A4FE
     BNE L6_A50F ; #A500
@@ -4950,6 +5088,8 @@ L6_A53A:
     LDA #$33 ; #A56B
     STA $04E0, Y ; #A56D
     RTS ; #A570
+
+L6_A571:
     LDA $04D0, X ; #A571
     AND #$0F ; #A574
     BNE L6_A58B ; #A576
@@ -4978,6 +5118,8 @@ L6_A59B:
     STA $0580, X ; #A5AA
 L6_A5AD:
     RTS ; #A5AD
+
+L6_A5AE:
     LDA $0480, X ; #A5AE
     BNE L6_A5FE ; #A5B1
     LDA $0490, X ; #A5B3
@@ -5043,6 +5185,8 @@ L6_A60A:
     .db $FF ; #A617
     .db $20 ; #A618
     .db $00 ; #A619
+
+L6_A61A:
     .db $BD ; #A61A
     .db $D0 ; #A61B
     .db $04 ; #A61C
@@ -5086,7 +5230,7 @@ L6_A65E:
     BCC L6_A67B ; #A672
     LDY #$02 ; #A674
     LDA #$3C ; #A676
-    JSR $F066 ; #A678
+    JSR L7_F066 ; #A678
 L6_A67B:
     LDA $0510, X ; #A67B
     CMP #$E8 ; #A67E
@@ -5104,6 +5248,8 @@ L6_A682:
     JSR L6_A708 ; #A69D
 L6_A6A0:
     RTS ; #A6A0
+
+L6_A6A1:
     LDA $04D0, X ; #A6A1
     AND #$0F ; #A6A4
     BNE L6_A6B7 ; #A6A6
@@ -5116,7 +5262,7 @@ L6_A6A0:
 L6_A6B7:
     LDA $0480, X ; #A6B7
     BNE L6_A6CD ; #A6BA
-    JSR $F977 ; #A6BC
+    JSR L7_F977 ; #A6BC
     BCS L6_A702 ; #A6BF
     LDA $0510, X ; #A6C1
     SBC #$1F ; #A6C4
@@ -5137,7 +5283,7 @@ L6_A6CD:
     LDA #$20 ; #A6E5
     STA $0490, X ; #A6E7
 L6_A6EA:
-    JSR $F92B ; #A6EA
+    JSR L7_F92B ; #A6EA
     BCS L6_A6F7 ; #A6ED
     LDA $0510, Y ; #A6EF
     ADC #$01 ; #A6F2
@@ -5177,6 +5323,8 @@ L6_A724:
     STA $0420, X ; #A733
 L6_A736:
     RTS ; #A736
+
+L6_A737:
     LDA $04D0, X ; #A737
     AND #$0F ; #A73A
     BNE L6_A74B ; #A73C
@@ -5187,6 +5335,8 @@ L6_A736:
     INC $04D0, X ; #A748
 L6_A74B:
     RTS ; #A74B
+
+L6_A74C:
     LDA $0400, X ; #A74C
     AND #$F7 ; #A74F
     STA $0400, X ; #A751
@@ -5255,6 +5405,7 @@ L6_A7C2:
     .db $F0 ; #A7C4
     .db $FF ; #A7C5
 
+L6_A7C6:
     LDA $04D0, X ; #A7C6
     AND #$0F ; #A7C9
     BNE L6_A7E4 ; #A7CB
@@ -5304,12 +5455,10 @@ L6_A822:
     .db $00 ; #A823
     .db $FE ; #A824
     .db $FF ; #A825
-    .db $20 ; #A826
-    .db $D5 ; #A827
-    .db $B3 ; #A828
-    .db $20 ; #A829
-    .db $5A ; #A82A
-    .db $B3 ; #A82B
+
+L6_A826:
+    JSR L6_B3D5 ; #A826
+    JSR L6_B35A ; #A829
 
     LDA $04D0, X ; #A82C
     AND #$0F ; #A82F
@@ -5459,6 +5608,8 @@ L6_A967:
     LDA L6_A99D, Y ; #A967
     STA $04B0, X ; #A96A
     RTS ; #A96D
+
+L6_A96E:
     LDA $0480, X ; #A96E
     INC $0480, X ; #A971
     LSR A ; #A974
@@ -5507,12 +5658,10 @@ L6_A99D:
     .db $05 ; #A99E
     .db $03 ; #A99F
     .db $05 ; #A9A0
-    .db $20 ; #A9A1
-    .db $D5 ; #A9A2
-    .db $B3 ; #A9A3
-    .db $20 ; #A9A4
-    .db $5A ; #A9A5
-    .db $B3 ; #A9A6
+
+L6_A9A1:
+    JSR L6_B3D5 ; #A9A1
+    JSR L6_B35A ; #A9A4
 
     LDA $04D0, X ; #A9A7
     AND #$0F ; #A9AA
@@ -5607,6 +5756,8 @@ L6_AA32:
     STA $0570, Y ; #AA74
 L6_AA77:
     RTS ; #AA77
+
+L6_AA78:
     LDA $0400, X ; #AA78
     BMI L6_AA83 ; #AA7B
     LDA #$00 ; #AA7D
@@ -5625,7 +5776,7 @@ L6_AA83:
 L6_AA9A:
     LDY #$01 ; #AA9A
     LDA #$76 ; #AA9C
-    JSR $F0FB ; #AA9E
+    JSR L7_F0FB ; #AA9E
     BCC L6_AAEC ; #AAA1
     LDA $0580, X ; #AAA3
     BNE L6_AACD ; #AAA6
@@ -5653,12 +5804,12 @@ L6_AACD:
     LDA $0400, X ; #AAD6
     ORA #$40 ; #AAD9
     STA $0400, X ; #AADB
-    JMP $F21E ; #AADE
+    JMP L7_F21E ; #AADE
 L6_AAE1:
     LDA $0400, X ; #AAE1
     AND #$BF ; #AAE4
     STA $0400, X ; #AAE6
-    JMP $F23C ; #AAE9
+    JMP L7_F23C ; #AAE9
 L6_AAEC:
     RTS ; #AAEC
 
@@ -5673,18 +5824,16 @@ L6_AAF1:
     .db $3C ; #AAF2
     .db $3C ; #AAF3
     .db $78 ; #AAF4
-    .db $20 ; #AAF5
-    .db $D5 ; #AAF6
-    .db $B3 ; #AAF7
-    .db $A5 ; #AAF8
-    .db $ED ; #AAF9
-    .db $F0 ; #AAFA
-    .db $09 ; #AAFB
 
+L6_AAF5:
+    JSR L6_B3D5 ; #AAF5
+    LDA <$ED ; #AAF8
+    BEQ L6_AB05 ; #AAFA
     LDA #$77 ; #AAFC
     CMP $0420, X ; #AAFE
     BEQ L6_AB17 ; #AB01
     BNE L6_AB0C ; #AB03
+L6_AB05:
     LDA #$76 ; #AB05
     CMP $0420, X ; #AB07
     BEQ L6_AB17 ; #AB0A
@@ -5838,6 +5987,7 @@ L6_AC0C:
     .db $0F ; #AC0C
     .db $05 ; #AC0D
 
+L6_AC0E:
     LDA $04D0, X ; #AC0E
     AND #$0F ; #AC11
     BNE L6_AC1E ; #AC13
@@ -5846,6 +5996,8 @@ L6_AC0C:
     JSR L6_B50C ; #AC1B
 L6_AC1E:
     JMP L6_B4C1 ; #AC1E
+
+L6_AC21:
     JSR L6_B3D5 ; #AC21
     LDA $04D0, X ; #AC24
     AND #$0F ; #AC27
@@ -5866,8 +6018,12 @@ L6_AC2E:
     STA $0480, X ; #AC4B
 L6_AC4E:
     JMP L6_ADC1 ; #AC4E
+
+L6_AC51:
     JSR L6_B350 ; #AC51
     JSR L6_AE23 ; #AC54
+
+L6_AC57:
     JSR L6_B3D5 ; #AC57
     LDA $04D0, X ; #AC5A
     AND #$0F ; #AC5D
@@ -5894,6 +6050,8 @@ L6_AC64:
     STA $0480, X ; #AC8A
 L6_AC8D:
     JMP L6_ADC1 ; #AC8D
+
+L6_AC90:
     JSR L6_B3D5 ; #AC90
     LDA $04D0, X ; #AC93
     AND #$0F ; #AC96
@@ -5924,6 +6082,8 @@ L6_ACC6:
     STA $0580, X ; #ACCB
 L6_ACCE:
     RTS ; #ACCE
+
+L6_ACCF:
     JSR L6_B3D5 ; #ACCF
     LDA $04D0, X ; #ACD2
     AND #$02 ; #ACD5
@@ -6029,12 +6189,12 @@ L6_ADA4:
     LDA $0400, X ; #ADAB
     ORA #$40 ; #ADAE
     STA $0400, X ; #ADB0
-    JMP $F21E ; #ADB3
+    JMP L7_F21E ; #ADB3
 L6_ADB6:
     LDA $0400, X ; #ADB6
     AND #$BF ; #ADB9
     STA $0400, X ; #ADBB
-    JMP $F23C ; #ADBE
+    JMP L7_F23C ; #ADBE
 L6_ADC1:
     LDY #$0F ; #ADC1
 L6_ADC3:
@@ -6174,10 +6334,14 @@ L6_AE67:
     .db $3C ; #AE95
 ; Is this the right place?
     LSR A ; #AE96
+
+L6_AE97:
     JSR L6_B3D5 ; #AE97
     JSR L6_B35A ; #AE9A
     JSR L6_B350 ; #AE9D
     RTS ; #AEA0
+
+L6_AEA1:
     JSR L6_B3D5 ; #AEA1
     LDA $0420, X ; #AEA4
     AND #$01 ; #AEA7
@@ -6244,6 +6408,8 @@ L6_AEE9:
     STA $0570, Y ; #AF2E
 L6_AF31:
     RTS ; #AF31
+
+L6_AF32:
     LDA $0480, X ; #AF32
     BEQ L6_AF50 ; #AF35
     DEC $0480, X ; #AF37
@@ -6283,8 +6449,11 @@ L6_AF50:
     .db $21 ; #AF69
     .db $33 ; #AF6A
 
+L6_AF6B:
     JSR L6_B3D5 ; #AF6B
     JMP L6_B35A ; #AF6E
+
+L6_AF71:
     JSR L6_B3D5 ; #AF71
     JSR L6_B350 ; #AF74
     LDA $0410, X ; #AF77
@@ -6446,17 +6615,16 @@ L6_B082:
     .db $00 ; #B084
     .db $20 ; #B085
     .db $32 ; #B086
-    .db $20 ; #B087
-    .db $D5 ; #B088
-    .db $B3 ; #B089
-    .db $A5 ; #B08A
-    .db $ED ; #B08B
-    .db $F0 ; #B08C
-    .db $09 ; #B08D
+
+L6_B087:
+    JSR L6_B3D5 ; #B087
+    LDA <$ED ; #B08A
+    BEQ L6_B097 ; #B08C
     LDA #$7A ; #B08E
     CMP $0420, X ; #B090
     BEQ L6_B0A9 ; #B093
     BNE L6_B09E ; #B095
+L6_B097:
     LDA #$7B ; #B097
     CMP $0420, X ; #B099
     BEQ L6_B0A9 ; #B09C
@@ -6482,7 +6650,7 @@ L6_B0AE:
     STA <$E6 ; #B0C3
     AND #$03 ; #B0C5
     TAY ; #B0C7
-    LDA $B14C, Y ; #B0C8                ; TODO continue here.
+    LDA L6_B14C, Y ; #B0C8
     STA $0480, X ; #B0CB
 L6_B0CE:
     LDA $0480, X ; #B0CE
@@ -6507,7 +6675,7 @@ L6_B0E1:
     SEC ; #B0F5
     SBC #$1C ; #B0F6
     STA $0510, X ; #B0F8
-    JSR $F50C ; #B0FB
+    JSR L7_F50C ; #B0FB
     ORA #$20 ; #B0FE
     PHA ; #B100
     JSR L6_B341 ; #B101
@@ -6541,9 +6709,17 @@ L6_B143:
     PLA ; #B147
     STA $04F0, X ; #B148
     RTS ; #B14B
-    ASL $1E1E, X ; #B14C
+
+L6_B14C:
+    .db $1E ; #B14C
+    .db $1E ; #B14D
+    .db $1E ; #B14E
     .db $3C ; #B14F
+
+L6_B150:
     JMP L6_B3D5 ; #B150
+
+L6_B153:
     JSR L6_B3D5 ; #B153
     LDA #$17 ; #B156
     STA $0570, X ; #B158
@@ -6695,6 +6871,8 @@ L6_B289:
 L6_B299:
     LDX <$00 ; #B299
     RTS ; #B29B
+
+L6_B29C:
     LDA $04D0, X ; #B29C
     AND #$0F ; #B29F
     BNE L6_B2B4 ; #B2A1
@@ -6828,17 +7006,17 @@ L6_B350:
     LDA #$0A ; #B350
     CMP <$D9 ; #B352
     BEQ L6_B359 ; #B354
-    JSR $F377 ; #B356
+    JSR L7_F377 ; #B356
 L6_B359:
     RTS ; #B359
 L6_B35A:
     LDA <$ED ; #B35A
     BNE L6_B372 ; #B35C
-    JSR $F977 ; #B35E
+    JSR L7_F977 ; #B35E
     BCS L6_B372 ; #B361
     INC <$EE ; #B363
     LDA #$16 ; #B365
-    JSR $F379 ; #B367
+    JSR EnqueueSfx ; #B367
     LDA #$3C ; #B36A
     STA <$ED ; #B36C
     STX <$EF ; #B36E
@@ -6853,12 +7031,12 @@ L6_B374:
     LDA #$FF ; #B378
     STA <$6D ; #B37A
     LDA #$F2 ; #B37C
-    JSR $F379 ; #B37E
+    JSR EnqueueSfx ; #B37E
     LDA #$23 ; #B381
-    JSR $F379 ; #B383
+    JSR EnqueueSfx ; #B383
 L6_B386:
     LDY <$31 ; #B386
-    LDA $B4AA, Y ; #B388
+    LDA L6_B4AA, Y ; #B388
     BNE L6_B395 ; #B38B
     LDY #$02 ; #B38D
     JSR L6_8E1A ; #B38F
@@ -6938,7 +7116,7 @@ L6_B411:
     CLC ; #B411
     STX <$00 ; #B412
     LDY <$31 ; #B414
-    LDX $B4AA, Y ; #B416
+    LDX L6_B4AA, Y ; #B416
     BEQ L6_B460 ; #B419
     STX <$01 ; #B41B
     LDY #$0C ; #B41D
@@ -6981,7 +7159,7 @@ L6_B460:
 L6_B463:
     STX <$00 ; #B463
     LDY <$31 ; #B465
-    LDX $B4AA, Y ; #B467
+    LDX L6_B4AA, Y ; #B467
     BEQ L6_B4A7 ; #B46A
     STX <$01 ; #B46C
     LDY #$0C ; #B46E
@@ -7019,6 +7197,7 @@ L6_B4A7:
     LDX <$00 ; #B4A7
     RTS ; #B4A9
 
+L6_B4AA:
     .db $04 ; #B4AA
     .db $00 ; #B4AB
     .db $00 ; #B4AC
@@ -7088,13 +7267,13 @@ L6_B50C:
     ASL A ; #B517
     ORA <$00 ; #B518
     TAY ; #B51A
-    LDA $B565, Y ; #B51B
+    LDA (L6_B565 + 0), Y ; #B51B
     STA $0550, X ; #B51E
-    LDA $B566, Y ; #B521
+    LDA (L6_B565 + 1), Y ; #B521
     STA $0560, X ; #B524
-    LDA $B567, Y ; #B527
+    LDA (L6_B565 + 2), Y ; #B527
     STA $0530, X ; #B52A
-    LDA $B568, Y ; #B52D
+    LDA (L6_B565 + 3), Y ; #B52D
     STA $0540, X ; #B530
     PLA ; #B533
     AND #$0F ; #B534
@@ -7120,6 +7299,8 @@ L6_B50C:
     STA $0540, X ; #B561
 L6_B564:
     RTS ; #B564
+
+L6_B565:
     .db $80 ; #B565
     .db $FE ; #B566
     .db $00 ; #B567
@@ -9809,7 +9990,7 @@ L6_BD3C:
     SEI ; #BFE0
     INC $FFE1 ; #BFE1
     CLD ; #BFE4
-    JMP $FE00 ; #BFE5
+    JMP ResetRoutine ; #BFE5
     .db $00 ; #BFE8
     .db $00 ; #BFE9
     .db $00 ; #BFEA
