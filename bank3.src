@@ -215,7 +215,7 @@ L3_811A:
     INC <$C2 ; #8122
 L3_8124:
     LDA <$C2 ; #8124
-    STA <$D1 ; #8126
+    STA <$D1                            ; Copy $C1 address to $D0.
     TYA ; #8128
     STA <$D2 ; #8129
     STA <$D3 ; #812B
@@ -402,7 +402,7 @@ L3_8240:
     TAX ; #8243
     JSR L3_833D ; #8244
     STA <$D0 ; #8247
-    STX <$D1 ; #8249
+    STX <$D1                            ; This is crazy, we read address from [$D0] and put it in $D0.
     BNE L3_8215 ; #824B
 L3_824D:
     TYA ; #824D
@@ -414,7 +414,7 @@ L3_824D:
     ADC <$D0 ; #8255
     STA <$D0 ; #8257
     BCC L3_825D ; #8259
-    INC <$D1 ; #825B
+    INC <$D1 ; #825B                    ; Increase address at $D0 by 2.
 L3_825D:
     LSR <$C4 ; #825D
     BCC L3_8266 ; #825F
@@ -542,14 +542,17 @@ L3_8336:
     CLC ; #8337
     ADC <$D2 ; #8338
     JMP L3_85BB ; #833A
+
+; Read from [$D0] and increment that address.
 L3_833D:
-    LDY #$00 ; #833D
-    LDA [$D0], Y ; #833F
-    INC <$D0 ; #8341
-    BNE L3_8347 ; #8343
-    INC <$D1 ; #8345
+    LDY #$00
+    LDA [$D0], Y
+    INC <$D0
+    BNE L3_8347
+    INC <$D1
 L3_8347:
     RTS ; #8347
+
 L3_8348:
     TXA ; #8348
     ORA #$28 ; #8349
