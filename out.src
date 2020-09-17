@@ -40,8 +40,18 @@ BackPaletteBk           = $0320
 SpritePaletteBk         = $0330
 
 VRamBufferBase          = $0360
+VRamBuffer2Base         = $03B8
+VRamBuffer3Base         = $03E0
 
 ; User defined constants.
+
+LSB_OFF                 = $00
+MSB_OFF                 = $01
+
+VRAM_MSB_OFF            = $00
+VRAM_LSB_OFF            = $01
+VRAM_CNT_OFF            = $02
+VRAM_DAT_OFF            = $03
 
 BUTTON_A                = %10000000
 BUTTON_B                = %01000000

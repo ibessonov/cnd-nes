@@ -680,7 +680,7 @@ L2_8B00:
     PHA ; #8B03
     LDA $04D1 ; #8B04
     PHA ; #8B07
-    JSR L2_8D0A ; #8B08
+    JSR BackupStatusOam ; #8B08
     LDA #$80 ; #8B0B
     STA $04D0 ; #8B0D
     STA $0400 ; #8B10
@@ -725,7 +725,7 @@ L2_8B66:
 L2_8B6C:
     LDA L2_8D4A, X ; #8B6C
     BMI L2_8B79 ; #8B6F
-    AND <$16 ; #8B71
+    AND <Joypad1Pressed ; #8B71
     BNE L2_8B95 ; #8B73
     INX ; #8B75
     INX ; #8B76
@@ -794,7 +794,7 @@ L2_8BE8:
     LDX $0490 ; #8BF0
     BNE L2_8BA1 ; #8BF3
 L2_8BF5:
-    JSR L2_8D16 ; #8BF5
+    JSR RestoreStatusOam ; #8BF5
     PLA ; #8BF8
     STA $04D1 ; #8BF9
     PLA ; #8BFC
@@ -917,19 +917,19 @@ L2_8CCE:
     RTS ; #8CDF
 L2_8CE0:
     LDA #$F8 ; #8CE0
-    STA $0200 ; #8CE2
+    STA OAM ; #8CE2
     LDA #$04 ; #8CE5
     STA <$97 ; #8CE7
     JSR L7_F392 ; #8CE9
-    LDA <$50 ; #8CEC
+    LDA <TwoPlayersMode ; #8CEC
     BEQ L2_8CFE ; #8CEE
     LDA <$54 ; #8CF0
     CMP #$0C ; #8CF2
     BNE L2_8CFE ; #8CF4
-    LDA <$15 ; #8CF6
-    STA <$14 ; #8CF8
-    LDA <$17 ; #8CFA
-    STA <$16 ; #8CFC
+    LDA <Joypad2Tapped ; #8CF6
+    STA <Joypad1Tapped ; #8CF8
+    LDA <Joypad2Pressed ; #8CFA
+    STA <Joypad1Pressed ; #8CFC
 L2_8CFE:
     RTS ; #8CFE
 L2_8CFF:
@@ -942,25 +942,26 @@ L2_8CFF:
     RTS ; #8D09
 
 
-L2_8D0A:
-    LDX #$27 ; #8D0A
-L2_8D0C:
-    LDA $0200, X ; #8D0C
-    STA $0100, X ; #8D0F
-    DEX ; #8D12
-    BPL L2_8D0C ; #8D13
-    RTS ; #8D15
+BackupStatusOam:
+    LDX #$27                            ; 40 bytes.
+BackupStatusOamLoop:
+    LDA OAM, X
+    STA $0100, X
+    DEX
+    BPL BackupStatusOamLoop
+    RTS
 
-L2_8D16:
-    LDX #$27 ; #8D16
-L2_8D18:
-    LDA $0100, X ; #8D18
-    STA $0200, X ; #8D1B
-    DEX ; #8D1E
-    BPL L2_8D18 ; #8D1F
-    LDA #$28 ; #8D21
-    STA <$97 ; #8D23
-    RTS ; #8D25
+
+RestoreStatusOam:
+    LDX #$27                            ; 40 bytes.
+RestoreStatusOamLoop:
+    LDA $0100, X
+    STA OAM, X
+    DEX
+    BPL RestoreStatusOamLoop
+    LDA #$28
+    STA <OamUsedSize
+    RTS
 
 
 L2_8D26:
@@ -1747,7 +1748,7 @@ L2_9000:
     PHA ; #9006
     LDA $04D1 ; #9007
     PHA ; #900A
-    JSR L2_8D0A ; #900B
+    JSR BackupStatusOam ; #900B
     LDA #$F8 ; #900E
     STA $0200 ; #9010
     STA $0204 ; #9013
@@ -1888,7 +1889,7 @@ L2_9115:
     STA <$97 ; #9117
     JSR L7_F392 ; #9119
     JSR L2_92AC ; #911C
-    JSR L2_8D16 ; #911F
+    JSR RestoreStatusOam ; #911F
     PLA ; #9122
     STA $04D1 ; #9123
     PLA ; #9126
@@ -2112,93 +2113,102 @@ L2_92AC:
     LDY <$31 ; #92AC
     LDA L2_94B6, Y                      ; 0 <= Y < 12 ?
     STA <$10 ; #92B1
+
+; <$10 - offset like in L2_94B6.
 L2_92B3:
-    LDX <$10 ; #92B3
-    INC <$10 ; #92B5
-    LDA (L2_94F6 + 1)
-    STA $0360
-    LDA (L2_94F6 + 0)
-    STA $0361
-    LDY #$07 ; #92C3
-    STY $0362 ; #92C5
+    LDX <$10
+    INC <$10
+    LDA (DialogueFrameNameVRamAddr + MSB_OFF)
+    STA (VRamBufferBase + 0)
+    LDA (DialogueFrameNameVRamAddr + LSB_OFF)
+    STA (VRamBufferBase + 1)
+    LDY #$07                            ; Character name is always 8 letters long.
+    STY (VRamBufferBase + 2)            ; Store that length.
     LDA L2_94C2, X ; #92C8
     ASL A ; #92CB
     ASL A ; #92CC
     ASL A ; #92CD
     ADC #$07 ; #92CE
-    TAX ; #92D0
+    TAX                                 ; X = L2_94C2[X] << 3 + 7.   0 if we've read $FF, because carry flag? Makes no sense.
 L2_92D1:
     LDA L2_9506, X ; #92D1
-    STA $0363, Y ; #92D4
+    STA (VRamBufferBase + 3), Y ; #92D4
     DEX ; #92D7
     DEY ; #92D8
-    BPL L2_92D1 ; #92D9
-    STY $036B ; #92DB
+    BPL L2_92D1                         ; Copy character name to the buffer.
+    STY $036B                           ; Put $FF in the end.
     STY <VRamBuffer1Dirty
-    JSR L2_947B ; #92E0
-    LDX <$10 ; #92E3
-    INC <$10 ; #92E5
-    LDY L2_94C2, X ; #92E7
-    LDA L2_9536, Y ; #92EA
-    STA <$0C ; #92ED
-    LDA L2_954A, Y ; #92EF
-    STA <$0D ; #92F2
-    LDX #$00 ; #92F4
-    STX <$11 ; #92F6
-    STX <$12 ; #92F8
+
+    JSR L2_947B                         ; Next frame with merged inputs.
+
+    LDX <$10
+    INC <$10
+    LDY L2_94C2, X
+    LDA L2_9536, Y
+    STA <$0C
+    LDA L2_954A, Y
+    STA <$0D                            ; $0C now has the address that points to the text.
+
+    LDX #$00
+    STX <$11
+    STX <$12
 L2_92FA:
-    LDX <$12 ; #92FA
-    LDY L2_94FE, X ; #92FC
-    STY <$0E ; #92FF
-    LDX #$17 ; #9301
-    LDA #$A4 ; #9303
+    LDX <$12                            ; X - number of text line.
+    LDY L2_94FE, X
+    STY <$0E                            ; Y - offset inside of VRAM buffer to hold a copy of line on the screen.
+
+    LDX #$17                            ; Length of the line, 24 character.
+    LDA #$A4                            ; Space.
 L2_9305:
-    STA $0360, Y ; #9305
-    INY ; #9308
-    DEX ; #9309
-    BPL L2_9305 ; #930A
-    LDX <$12 ; #930C
-    LDA #$17 ; #930E
-    STA <$13 ; #9310
-    LDA L2_94FB, X ; #9312
-    STA $0360 ; #9315
-    LDA L2_94F8, X ; #9318
-    STA $0361 ; #931B
+    STA VRamBufferBase, Y
+    INY
+    DEX
+    BPL L2_9305                         ; Clear that line.
+
+    LDX <$12
+    LDA #$17
+    STA <$13
+    LDA DialogueFrameTextVRamMsb, X
+    STA (VRamBufferBase + VRAM_MSB_OFF)
+    LDA DialogueFrameTextVRamLsb, X
+    STA (VRamBufferBase + VRAM_LSB_OFF)
 L2_931E:
-    LDY <$11 ; #931E
-    LDA [$0C], Y ; #9320
-    CMP #$FE ; #9322
-    BEQ L2_9365 ; #9324
-    CMP #$FF ; #9326
-    BNE L2_9334 ; #9328
-    LDA #$00 ; #932A
+    LDY <$11                            ; Y = <$11, index inside of the line.
+    LDA [$0C], Y                        ; Current character.
+    CMP #$FE
+    BEQ L2_9365
+    CMP #$FF
+    BNE L2_9334
+    LDA #$00                            ; End of the last line.
     STA <$95 ; #932C
     JSR L2_949B ; #932E
-    JMP L2_940D ; #9331
-L2_9334:
-    STA $0363 ; #9334
-    LDX <$0E ; #9337
-    STA $0360, X ; #9339
-    INC <$0E ; #933C
-    JSR L2_9469 ; #933E
-    LDY #$00 ; #9341
-    STY $0362 ; #9343
-    DEC <$13 ; #9346
-    DEY ; #9348
-    STY $0364 ; #9349
+    JMP L2_940D                         ; Should wait for input/timeout? and proceed with the cutscene / map / ...
+
+L2_9334:                                ; Valid char in A.
+    STA (VRamBufferBase + VRAM_DAT_OFF)
+    LDX <$0E
+    STA VRamBufferBase, X
+    INC <$0E                            ; Store a copy for reuse while scrolling the text.
+    JSR L2_9469                         ; Increase char index.
+    LDY #$00
+    STY (VRamBufferBase + VRAM_CNT_OFF) ; Ensure that we only write one char at a time.
+    DEC <$13
+    DEY                                 ; Y = #$FF
+    STY (VRamBufferBase + 4)            ; { msb; lsb; 0; char; #$FF }
     STY <VRamBuffer1Dirty
-    JSR L2_9470 ; #934E
-    LDA <$16 ; #9351
-    AND #$10 ; #9353
+    JSR L2_9470                         ; 3 frames wait.
+    LDA <Joypad1Pressed ; #9351
+    AND #BUTTON_START
     BEQ L2_9360 ; #9355
     LDA <$31 ; #9357
     CMP #$0A ; #9359
     BEQ L2_9360 ; #935B
-    JMP L2_9457 ; #935D
+    JMP L2_9457                         ; Wait forever if it's the end of the game and we pressed START?
 L2_9360:
-    INC $0361 ; #9360
-    BNE L2_931E ; #9363
-L2_9365:
+    INC (VRamBufferBase + VRAM_LSB_OFF)
+    BNE L2_931E                         ; Can't be 0, jump is unconditional.
+
+L2_9365:                                ; End of the line.
     INC <$13 ; #9365
     LDY <$13 ; #9367
     BMI L2_938F ; #9369
@@ -2209,30 +2219,32 @@ L2_9365:
 L2_9375:
     STA $0363, Y ; #9375
     DEY ; #9378
-    BPL L2_9375 ; #9379
+    BPL L2_9375                         ; Write spaces for the rest of the line. Why tho?
+
     STY <VRamBuffer1Dirty
-    JSR L2_9470 ; #937D
-    LDA <$16 ; #9380
-    AND #$10 ; #9382
+    JSR L2_9470                         ; Wait 3 frames.
+    LDA <Joypad1Pressed
+    AND #BUTTON_START
     BEQ L2_938F ; #9384
     LDA <$31 ; #9386
     CMP #$0A ; #9388
     BEQ L2_938F ; #938A
     JMP L2_9457 ; #938C
+
 L2_938F:
     JSR L2_9469 ; #938F
     INC <$12 ; #9392
     LDA <$12 ; #9394
     CMP #$03 ; #9396
     BEQ L2_939D ; #9398
-    JMP L2_92FA ; #939A
+    JMP L2_92FA                      ; Go back to write next line.
 L2_939D:
-    LDA <$14 ; #939D
-    AND #$80 ; #939F
+    LDA <Joypad1Tapped ; #939D
+    AND #BUTTON_A ; #939F
     BNE L2_93BB ; #93A1
-    LDA <$14 ; #93A3
-    AND #$10 ; #93A5
-    BEQ L2_93B2 ; #93A7
+    LDA <Joypad1Tapped ; #93A3
+    AND #BUTTON_START ; #93A5
+    BEQ L2_93B2 ; #93A7             ; TODO finish it.
     LDA <$31 ; #93A9
     CMP #$0A ; #93AB
     BEQ L2_93B2 ; #93AD
@@ -2247,13 +2259,13 @@ L2_93BB:
     JSR L2_949B ; #93BF
     LDX #$00 ; #93C2
 L2_93C4:
-    LDA L2_94FB, X ; #93C4
+    LDA DialogueFrameTextVRamMsb, X ; #93C4
     STA $0360 ; #93C7
-    LDA L2_94F8, X ; #93CA
+    LDA DialogueFrameTextVRamLsb, X ; #93CA
     STA $0361 ; #93CD
     LDA #$17 ; #93D0
     STA $0362 ; #93D2
-    LDY $94FF, X ; #93D5                ; Another strange address.
+    LDY (L2_94FE + 1), X
     INX ; #93D8
     STX <$0E ; #93D9
     LDX #$00 ; #93DB
@@ -2282,14 +2294,16 @@ L2_93EA:
     LDA #$02 ; #9406
     STA <$12 ; #9408
     JMP L2_92FA ; #940A
+
+
 L2_940D:
-    LDA <$14 ; #940D
+    LDA <Joypad1Tapped ; #940D
     AND #$80 ; #940F
     BNE L2_9425 ; #9411
     LDA <$31 ; #9413
     CMP #$0A ; #9415
     BEQ L2_941F ; #9417
-    LDA <$14 ; #9419
+    LDA <Joypad1Tapped ; #9419
     AND #$10 ; #941B
     BNE L2_9457 ; #941D
 L2_941F:
@@ -2301,9 +2315,9 @@ L2_9425:
     BMI L2_9457 ; #942A
     LDX #$00 ; #942C
 L2_942E:
-    LDA L2_94FB, X ; #942E
+    LDA DialogueFrameTextVRamMsb, X ; #942E
     STA $0360 ; #9431
-    LDA L2_94F8, X ; #9434
+    LDA DialogueFrameTextVRamLsb, X ; #9434
     STA $0361 ; #9437
     LDY #$17 ; #943A
     STY $0362 ; #943C
@@ -2319,64 +2333,70 @@ L2_9441:
     CPX #$03 ; #9450
     BNE L2_942E ; #9452
     JMP L2_92B3 ; #9454
+
 L2_9457:
     LDA <$31 ; #9457
-    CMP #$0A ; #9459
-    BEQ L2_945E ; #945B
-    RTS ; #945D
+    CMP #ZONE_J
+    BEQ L2_945E
+    RTS
 L2_945E:
-    LDA #$07 ; #945E
-    JSR EnqueueSfxEx ; #9460
-L2_9463:
-    JSR WaitNmiAndReadInputs ; #9463
-    JMP L2_9463 ; #9466
+    LDA #$07                            ; Main theme?
+    JSR EnqueueSfxEx
+GameCompletedInfiniteLoop:
+    JSR WaitNmiAndReadInputs
+    JMP GameCompletedInfiniteLoop
+
 L2_9469:
-    INC <$11 ; #9469
-    BNE L2_946F ; #946B
-    INC <$0D ; #946D
+    INC <$11                            ; Index inside of the line.
+    BNE L2_946F
+    INC <$0D                            ; Offset overflow, MSB of [$0C] must be incremented.
 L2_946F:
-    RTS ; #946F
+    RTS
+
 L2_9470:
     LDA #$27 ; #9470
     JSR EnqueueSfx ; #9472
     JSR WaitNmiAndReadInputs ; #9475
     JSR WaitNmiAndReadInputs ; #9478
+
 L2_947B:
     JSR WaitNmiAndReadInputs ; #947B
     INC <$95 ; #947E
-    LDA <$50 ; #9480
+    LDA <TwoPlayersMode
     BEQ L2_949A ; #9482
     LDA <$54 ; #9484
     CMP #$0C ; #9486
     BNE L2_949A ; #9488
-    LDA <$14 ; #948A
-    AND #$30 ; #948C
-    ORA <$15 ; #948E
-    STA <$14 ; #9490
-    LDA <$16 ; #9492
-    AND #$30 ; #9494
-    ORA <$17 ; #9496
-    STA <$16 ; #9498
+
+    LDA <Joypad1Tapped
+    AND #(BUTTON_SELECT | BUTTON_START)
+    ORA <Joypad2Tapped
+    STA <Joypad1Tapped                  ; Reuse inputs of second controller as if it was the first one?
+
+    LDA <Joypad1Pressed
+    AND #(BUTTON_SELECT | BUTTON_START)
+    ORA <Joypad2Pressed
+    STA <Joypad1Pressed
 L2_949A:
-    RTS ; #949A
+    RTS
 
 
 L2_949B:
     LDX #$04 ; #949B
 L2_949D:
-    LDA L2_9501, X ; #949D
-    STA $03E0, X ; #94A0
-    DEX ; #94A3
-    BPL L2_949D ; #94A4
+    LDA L2_9501, X
+    STA VRamBuffer3Base, X
+    DEX
+    BPL L2_949D                         ; Loop.
     LDA <$95 ; #94A6
     AND #$08 ; #94A8
     BNE L2_94B1 ; #94AA
-    LDA #$A4 ; #94AC
-    STA $03E3 ; #94AE
+    LDA #$A4
+    STA (VRamBuffer3Base + 3)           ; Replace it with space ...if what?
 L2_94B1:
-    LDA #$FF ; #94B1
-    STA <$1C ; #94B3
-    RTS ; #94B5
+    LDA #$FF
+    STA <VRamBuffer3Dirty
+    RTS
 
 L2_94B6:
     .db $00 ; #94B6
@@ -2392,6 +2412,7 @@ L2_94B6:
     .db $1E ; #94C0
     .db $2B                             ; These are offsets in the following data.
 
+; { Character name index/offset (?); index in L2_9536 / L2_954A }+ #$FF
 L2_94C2:
     .db $03 ; #94C2
     .db $04 ; #94C3
@@ -2457,31 +2478,27 @@ L2_94C2:
     .db $03 ; #94F4
     .db $FF ; #94F5
 
-L2_94F6:
-    .db $23
-    .db $22
+DialogueFrameNameVRamAddr:
+    .dw $2223
 
-L2_94F8:
-    .db $C4 ; #94F8
-    .db $04 ; #94F9
-    .db $44 ; #94FA
+DialogueFrameTextVRamLsb:
+    .db LOW($22C4)
+    .db LOW($2304)
+    .db LOW($2344)
 
-L2_94FB:
-    .db $22 ; #94FB
-    .db $23 ; #94FC
-    .db $23 ; #94FD
+DialogueFrameTextVRamMsb:
+    .db HIGH($22C4)
+    .db HIGH($2304)
+    .db HIGH($2344)
 
-L2_94FE:
+L2_94FE:                                ; Offset for the line text start in VRAM buffer.
     .db $20
     .db $38 ; #94FF
     .db $50 ; #9500
 
 L2_9501:
-    .db $23 ; #9501
-    .db $7C ; #9502
-    .db $00 ; #9503
-    .db $AC ; #9504
-    .db $FF ; #9505
+    .db $23, $7C, $00, $AC              ; Some very specific tile: "|>" cursor.
+    .db $FF
 
 L2_9506:
     .db $8C, $91, $92, $99, $A4, $A4, $A4, $A4      ; "CHIP    "
